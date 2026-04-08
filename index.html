@@ -1113,30 +1113,37 @@
   })();
 
   // ── LIVE STATS from backend ──
-  const POT_KEY = 'quid_pot_v1';
-  const POT_MIN = 5000;
   const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
 
-  // Load persisted pot or start at 5000
-  let displayedPot = Math.max(POT_MIN, parseFloat(localStorage.getItem(POT_KEY) || POT_MIN));
+  // Pot grows from £5000 starting 8 Apr 2026, £4 every 5 minutes — same for every visitor
+  const POT_START      = 5000;
+  const POT_EPOCH      = new Date('2026-04-08T12:00:00Z').getTime();
+  const POT_TICK_MS    = 5 * 60 * 1000; // 5 minutes
+  const POT_TICK_AMOUNT = 4;
+
+  function calcPot() {
+    const elapsed = Math.max(0, Date.now() - POT_EPOCH);
+    const ticks   = Math.floor(elapsed / POT_TICK_MS);
+    return POT_START + ticks * POT_TICK_AMOUNT;
+  }
+
+  let displayedPot = calcPot();
   document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
 
-  // Tick up £4 every 5 minutes, persist across reloads
+  // Update every minute to stay in sync
   setInterval(() => {
-    displayedPot += 4;
-    localStorage.setItem(POT_KEY, displayedPot);
+    displayedPot = calcPot();
     document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
-  }, 5 * 60 * 1000);
+  }, 60 * 1000);
 
   async function loadStats() {
     try {
       const res  = await fetch('/api/stats');
       const data = await res.json();
 
-      // Only override displayed pot if real members have joined (real pot > 0)
+      // Only override if real members have joined — use whichever is higher
       if (data.potAmount && data.potAmount > 0) {
-        displayedPot = Math.max(displayedPot, data.potAmount);
-        localStorage.setItem(POT_KEY, displayedPot);
+        displayedPot = Math.max(calcPot(), data.potAmount);
         document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
       }
       document.querySelector('.pot-sub').textContent =
