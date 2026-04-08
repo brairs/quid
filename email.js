@@ -88,6 +88,14 @@ async function sendWelcome(user, entriesThisWeek) {
         </p>
       </div>
       <div class="pill">✉ Free postal entry also available — see T&Cs</div>
+      <hr>
+      <p class="body-text">
+        <strong style="color:#fff;">Your referral link:</strong><br>
+        Share this with friends — you get <span class="highlight">+2 bonus entries</span> every time someone joins through your link.<br><br>
+        <span style="background:rgba(130,60,255,0.2);padding:8px 14px;border-radius:8px;font-size:0.8rem;color:#c8b4ff;display:inline-block;word-break:break-all;">
+          ${BASE}/?ref=${user.referral_code}
+        </span>
+      </p>
       <br>
       <a class="btn" href="${BASE}">View this week's pot →</a>
     `),
@@ -196,10 +204,36 @@ async function sendPaymentFailed(user) {
   });
 }
 
+async function sendReferralBonus(referrer, newHandle) {
+  const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+  await transporter.sendMail({
+    from: FROM,
+    to:   referrer.email,
+    subject: `+2 bonus entries — @${newHandle} joined QUID using your link!`,
+    html: html('Referral Bonus!', `
+      <div class="card">
+        <div class="label">Referral reward</div>
+        <div class="amount">+2 entries</div>
+        <p class="body-text" style="margin-top:12px;">
+          <span class="highlight">@${newHandle}</span> just joined QUID using your referral link!<br><br>
+          You've been credited <span class="highlight">2 bonus draw entries</span> —
+          they'll be added to your next week's draw automatically.
+        </p>
+        <hr>
+        <p class="body-text">
+          Keep sharing your link to stack more entries. Every person who joins = 2 extra chances to win.
+        </p>
+      </div>
+      <a class="btn" href="${BASE_URL}">View this week's pot →</a>
+    `),
+  });
+}
+
 module.exports = {
   sendWelcome,
   sendWinnerNotification,
   sendDrawResult,
   sendPaymentConfirmation,
   sendPaymentFailed,
+  sendReferralBonus,
 };

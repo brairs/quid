@@ -615,6 +615,25 @@
         </div>
 
         <div class="footnote">£4 / month &nbsp;·&nbsp; 4 weekly entries &nbsp;·&nbsp; winner takes 90% of the pot</div>
+
+        <!-- REFERRAL LINK LOOKUP -->
+        <div style="margin-top:14px;text-align:center;">
+          <div id="refLookup" style="display:inline-flex;gap:8px;align-items:center;">
+            <input id="refEmail" type="email" placeholder="Your email → get referral link"
+              style="background:rgba(14,8,32,0.6);border:1px solid rgba(150,100,255,0.25);border-radius:10px;
+                     padding:8px 14px;color:#fff;font-size:0.75rem;outline:none;width:220px;" />
+            <button onclick="fetchRefLink()"
+              style="background:rgba(130,60,255,0.25);border:1px solid rgba(150,100,255,0.3);
+                     border-radius:10px;padding:8px 14px;color:rgba(200,180,255,0.8);
+                     font-size:0.75rem;cursor:pointer;white-space:nowrap;">Get my link</button>
+          </div>
+          <div id="refLinkOut" style="display:none;margin-top:10px;font-size:0.72rem;color:rgba(200,180,255,0.6);">
+            Your referral link: <span id="refLinkVal"
+              style="color:#b44eff;cursor:pointer;text-decoration:underline;"
+              onclick="copyRefLink()"></span>
+            <span style="color:rgba(180,160,255,0.3);margin-left:6px;">(click to copy)</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1178,6 +1197,28 @@
   checkUserEntries();
   setInterval(loadStats, 30000); // refresh every 30s
 
+  async function fetchRefLink() {
+    const email = document.getElementById('refEmail').value.trim();
+    if (!email) return;
+    try {
+      const res = await fetch(`/api/referral?email=${encodeURIComponent(email)}`);
+      if (!res.ok) { alert('Email not found — are you a member?'); return; }
+      const data = await res.json();
+      const link = `${window.location.origin}/?ref=${data.code}`;
+      document.getElementById('refLinkVal').textContent = link;
+      document.getElementById('refLinkVal').dataset.link = link;
+      document.getElementById('refLinkOut').style.display = 'block';
+    } catch(e) { alert('Something went wrong.'); }
+  }
+
+  function copyRefLink() {
+    const link = document.getElementById('refLinkVal').dataset.link;
+    navigator.clipboard.writeText(link).then(() => {
+      document.getElementById('refLinkVal').textContent = 'Copied!';
+      setTimeout(() => { document.getElementById('refLinkVal').textContent = link; }, 2000);
+    });
+  }
+
   async function submitJoin() {
     const name  = document.getElementById('joinName').value.trim();
     const email = document.getElementById('joinEmail').value.trim();
@@ -1192,7 +1233,7 @@
       const res  = await fetch('/api/checkout', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ name, email, handle: hand }),
+        body:    JSON.stringify({ name, email, handle: hand, ref: new URLSearchParams(window.location.search).get('ref') || '' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong');

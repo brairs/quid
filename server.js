@@ -3,7 +3,7 @@ const express  = require('express');
 const cors     = require('cors');
 const path     = require('path');
 const stripe   = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { q, currentWeekStart, addWeeklyEntries } = require('./db');
+const { q, currentWeekStart, addWeeklyEntries, generateReferralCode } = require('./db');
 const email    = require('./email');
 const { runDraw, addWeeklyEntriesForAllActive, startScheduler } = require('./draw');
 
@@ -63,8 +63,17 @@ app.get('/api/entries', (req, res) => {
  * Frontend sends: { name, email, handle }
  * Returns: { url } — redirect to Stripe-hosted checkout page.
  */
+/** Get a user's referral code by email */
+app.get('/api/referral', (req, res) => {
+  const { email: userEmail } = req.query;
+  if (!userEmail) return res.status(400).json({ error: 'email required' });
+  const user = q.getUserByEmail.get(userEmail);
+  if (!user) return res.status(404).json({ error: 'not found' });
+  res.json({ code: user.referral_code, handle: user.handle });
+});
+
 app.post('/api/checkout', async (req, res) => {
-  const { name, email: userEmail, handle } = req.body;
+  const { name, email: userEmail, handle, ref } = req.body;
 
   if (!name || !userEmail || !handle) {
     return res.status(400).json({ error: 'name, email and handle are required' });
@@ -93,14 +102,17 @@ app.post('/api/checkout', async (req, res) => {
 
       // Pre-create user record (is_active=0 until payment confirmed)
       try {
+        // Look up referrer
+        const referrer = ref ? q.getUserByReferralCode.get(ref.toUpperCase()) : null;
         q.createUser.run({
           name,
           email:              userEmail,
           handle:             cleanHandle,
           stripe_customer_id: customer.id,
+          referral_code:      generateReferralCode(),
+          referred_by:        referrer ? referrer.id : null,
         });
       } catch (e) {
-        // Email or handle already taken
         return res.status(409).json({ error: 'That email or username is already registered' });
       }
     }
@@ -112,7 +124,7 @@ app.post('/api/checkout', async (req, res) => {
       success_url: `${process.env.BASE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${process.env.BASE_URL}/?cancelled=1`,
       subscription_data: {
-        metadata: { handle: cleanHandle },
+        metadata: { handle: cleanHandle, ref: ref || '' },
       },
     });
 
@@ -154,10 +166,18 @@ app.post('/webhook', async (req, res) => {
       const week = currentWeekStart();
       addWeeklyEntries(user.id, week);
 
-      // Refresh user after bonus update
+      // Credit referrer with 2 bonus entries
       const freshUser = q.getUserByCustomer.get(custId);
-      const entryCount = q.countUserEntriesThisWeek.get(user.id, week).n;
+      if (freshUser.referred_by) {
+        const referrer = q.getUserById.get(freshUser.referred_by);
+        if (referrer) {
+          q.addBonusEntries.run({ n: 2, id: referrer.id });
+          console.log(`[webhook] Credited @${referrer.handle} with 2 bonus entries for referring @${user.handle}`);
+          try { await email.sendReferralBonus(referrer, freshUser.handle); } catch(e) { console.error(e.message); }
+        }
+      }
 
+      const entryCount = q.countUserEntriesThisWeek.get(user.id, week).n;
       console.log(`[webhook] Activated @${user.handle} — ${entryCount} entries for week ${week}`);
 
       // Welcome email

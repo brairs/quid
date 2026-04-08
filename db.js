@@ -56,7 +56,16 @@ db.exec(`
   );
 `);
 
+// ── MIGRATIONS (add columns to existing DB safely) ───────────────────────────
+try { db.exec(`ALTER TABLE users ADD COLUMN referral_code TEXT`); } catch(e) {}
+try { db.exec(`ALTER TABLE users ADD COLUMN referred_by INTEGER`); } catch(e) {}
+try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_referral_code ON users(referral_code)`); } catch(e) {}
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
+
+function generateReferralCode() {
+  return Math.random().toString(36).substr(2, 7).toUpperCase();
+}
 
 function currentWeekStart() {
   const now = new Date();
@@ -79,7 +88,9 @@ function nextWeekStart() {
 // ── PREPARED STATEMENTS ───────────────────────────────────────────────────────
 
 const q = {
-  createUser:       db.prepare(`INSERT INTO users (name, email, handle, stripe_customer_id, bonus_remaining) VALUES (@name, @email, @handle, @stripe_customer_id, 5)`),
+  createUser:       db.prepare(`INSERT INTO users (name, email, handle, stripe_customer_id, bonus_remaining, referral_code, referred_by) VALUES (@name, @email, @handle, @stripe_customer_id, 5, @referral_code, @referred_by)`),
+  getUserByReferralCode: db.prepare(`SELECT * FROM users WHERE referral_code=?`),
+  addBonusEntries:  db.prepare(`UPDATE users SET bonus_remaining=bonus_remaining+@n WHERE id=@id`),
   activateUser:     db.prepare(`UPDATE users SET is_active=1, stripe_subscription_id=@sub_id WHERE stripe_customer_id=@cust_id`),
   deactivateUser:   db.prepare(`UPDATE users SET is_active=0 WHERE stripe_customer_id=@cust_id`),
   getUserByCustomer:db.prepare(`SELECT * FROM users WHERE stripe_customer_id=?`),
@@ -112,4 +123,4 @@ function addWeeklyEntries(userId, weekStart) {
   }
 }
 
-module.exports = { db, q, currentWeekStart, nextWeekStart, addWeeklyEntries };
+module.exports = { db, q, currentWeekStart, nextWeekStart, addWeeklyEntries, generateReferralCode };
