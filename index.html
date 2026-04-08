@@ -1265,27 +1265,27 @@
         @keyframes popIn{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
       </style>
-      <div style="font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(180,160,255,0.35);margin-bottom:16px;">Welcome to QUID</div>
-      <div style="font-size:1.2rem;font-weight:700;letter-spacing:-0.03em;color:#fff;margin-bottom:10px;">Got a referral code?</div>
-      <div style="font-size:0.78rem;color:rgba(200,180,255,0.5);margin-bottom:22px;line-height:1.65;">
-        Enter it below and get <strong style="color:#b44eff;">+3 bonus entries</strong> on top of your signup bonus —
-        <strong style="color:rgba(220,200,255,0.85);">12 entries in week one.</strong>
+      <div style="font-size:0.58rem;letter-spacing:0.22em;text-transform:uppercase;color:rgba(180,160,255,0.3);margin-bottom:14px;">Welcome to QUID</div>
+      <div style="font-size:1.05rem;font-weight:700;letter-spacing:-0.02em;color:#fff;margin-bottom:8px;">Got a referral code?</div>
+      <div style="font-size:0.72rem;color:rgba(200,180,255,0.42);margin-bottom:22px;line-height:1.7;">
+        Enter it for <span style="color:#b44eff;font-weight:600;">+3 bonus entries</span> on top of your signup bonus <span style="color:rgba(220,200,255,0.7);font-weight:500;">· 12 entries in week one</span>
       </div>
-      <input id="refCodeInput" type="text" placeholder="ENTER CODE" maxlength="10"
-        style="width:100%;box-sizing:border-box;background:rgba(130,60,255,0.1);
-               border:1px solid rgba(150,100,255,0.25);border-radius:12px;
-               padding:13px 16px;color:#fff;font-size:0.9rem;outline:none;
-               text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;
-               font-family:'Helvetica Neue',Arial,sans-serif;" />
+      <input id="refCodeInput" type="text" placeholder="Referral code" maxlength="10"
+        style="width:100%;box-sizing:border-box;background:rgba(130,60,255,0.08);
+               border:1px solid rgba(150,100,255,0.2);border-radius:12px;
+               padding:12px 15px;color:#fff;font-size:0.82rem;outline:none;
+               text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;
+               font-family:'Helvetica Neue',Arial,sans-serif;color:rgba(220,200,255,0.9);" />
       <button onclick="applyRefCode()"
-        style="width:100%;background:linear-gradient(135deg,#7c3aed,#b44eff);border:none;
-               border-radius:12px;padding:14px;color:#fff;font-size:0.85rem;
-               font-weight:600;cursor:pointer;letter-spacing:0.07em;margin-bottom:10px;">Apply Code</button>
-      <div id="refCodeMsg" style="font-size:0.7rem;min-height:18px;line-height:1.5;text-align:center;margin-bottom:10px;"></div>
+        style="width:100%;background:linear-gradient(135deg,#6d28d9,#a855f7);border:none;
+               border-radius:12px;padding:13px;color:#fff;font-size:0.8rem;
+               font-weight:600;cursor:pointer;letter-spacing:0.08em;margin-bottom:10px;
+               opacity:0.92;">Apply Code</button>
+      <div id="refCodeMsg" style="font-size:0.67rem;min-height:16px;line-height:1.5;text-align:center;margin-bottom:8px;"></div>
       <div style="text-align:center;">
         <span onclick="dismissRefPopup()"
-          style="font-size:0.68rem;color:rgba(180,160,255,0.25);cursor:pointer;letter-spacing:0.07em;">
-          No code — continue to site
+          style="font-size:0.63rem;color:rgba(180,160,255,0.2);cursor:pointer;letter-spacing:0.06em;">
+          No code · continue to site
         </span>
       </div>
     `;
