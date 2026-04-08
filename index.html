@@ -618,6 +618,26 @@
       </div>
     </div>
 
+    <!-- REFERRAL LOOKUP -->
+    <div style="margin-top:16px;text-align:center;">
+      <div style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(180,160,255,0.25);margin-bottom:10px;">Already a member?</div>
+      <div style="display:inline-flex;gap:8px;align-items:center;background:rgba(14,8,32,0.6);border:1px solid rgba(150,100,255,0.15);border-radius:14px;padding:8px 10px;">
+        <input id="refEmail" type="email" placeholder="Your email"
+          style="background:transparent;border:none;outline:none;color:rgba(200,180,255,0.7);
+                 font-size:0.75rem;font-family:'Helvetica Neue',Arial,sans-serif;width:180px;padding:2px 4px;" />
+        <button onclick="fetchRefLink()"
+          style="background:rgba(130,60,255,0.2);border:1px solid rgba(150,100,255,0.2);
+                 border-radius:9px;padding:6px 12px;color:rgba(200,180,255,0.6);
+                 font-size:0.7rem;cursor:pointer;white-space:nowrap;font-family:'Helvetica Neue',Arial,sans-serif;">Get link</button>
+      </div>
+      <div id="refLinkOut" style="display:none;margin-top:10px;font-size:0.7rem;color:rgba(180,160,255,0.4);">
+        Your link:&nbsp;
+        <span id="refLinkVal" onclick="copyRefLink()"
+          style="color:#b44eff;cursor:pointer;text-decoration:underline;letter-spacing:0.01em;"></span>
+        &nbsp;<span style="color:rgba(180,160,255,0.2);font-size:0.62rem;">· click to copy</span>
+      </div>
+    </div>
+
     <!-- CARD-LEVEL LINKS -->
     <div class="card-links">
       <button onclick="openTC()">Terms &amp; Conditions</button>
