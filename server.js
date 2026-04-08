@@ -284,8 +284,26 @@ app.post('/admin/postal-entry', requireAdmin, (req, res) => {
 
 /** View all users */
 app.get('/admin/users', requireAdmin, (req, res) => {
-  const users = require('./db').db.prepare('SELECT id,name,email,handle,is_active,joined_at FROM users ORDER BY joined_at DESC').all();
+  const users = require('./db').db.prepare('SELECT id,name,email,handle,is_active,joined_at,bonus_remaining FROM users ORDER BY joined_at DESC').all();
   res.json(users);
+});
+
+/** Last draw with winner email */
+app.get('/admin/last-draw', requireAdmin, (req, res) => {
+  const draw = require('./db').db.prepare(`
+    SELECT d.*, u.email as winner_email
+    FROM draws d LEFT JOIN users u ON u.id = d.winner_user_id
+    ORDER BY d.week_start DESC LIMIT 1
+  `).get();
+  res.json(draw || {});
+});
+
+/** Manually activate a user (webhook recovery) */
+app.post('/admin/activate-user', requireAdmin, (req, res) => {
+  const { user_id } = req.body;
+  if (!user_id) return res.status(400).json({ error: 'user_id required' });
+  require('./db').db.prepare('UPDATE users SET is_active=1 WHERE id=?').run(user_id);
+  res.json({ ok: true });
 });
 
 /** Seed entries for all active users for current week (manual fallback) */

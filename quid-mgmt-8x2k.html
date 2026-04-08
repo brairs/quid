@@ -70,6 +70,11 @@
       </div>
     </div>
 
+    <div class="card" id="winnerCard" style="display:none;">
+      <h2>Last Draw Winner</h2>
+      <div id="winnerInfo" style="font-size:0.85rem;color:rgba(200,180,255,0.7);line-height:2;"></div>
+    </div>
+
     <div class="card">
       <h2>Members</h2>
       <table>
@@ -81,6 +86,7 @@
             <th>Status</th>
             <th>Joined</th>
             <th>Bonus Left</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="userTable"></tbody>
@@ -123,6 +129,19 @@
       document.getElementById('totalPot').textContent = '£' + pot.toLocaleString('en-GB');
       document.getElementById('yourCut').textContent = '£' + cut.toFixed(2);
 
+      // Last draw winner
+      const drawRes = await fetch('/admin/last-draw', { headers: { 'x-admin-key': adminKey } });
+      if (drawRes.ok) {
+        const draw = await drawRes.json();
+        if (draw && draw.week_start) {
+          document.getElementById('winnerCard').style.display = 'block';
+          document.getElementById('winnerInfo').innerHTML =
+            `<strong style="color:#b44eff;">@${draw.winner_handle}</strong> won <strong style="color:#fff;">£${draw.pot_amount}</strong> — week of ${draw.week_start}<br>
+             Email: <strong style="color:#fff;">${draw.winner_email || 'postal entry'}</strong><br>
+             Total entries: ${draw.total_entries}`;
+        }
+      }
+
       const tbody = document.getElementById('userTable');
       tbody.innerHTML = '';
       users.forEach(u => {
@@ -133,9 +152,19 @@
           <td><span class="badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
           <td>${u.joined_at ? u.joined_at.slice(0,10) : '—'}</td>
           <td>${u.bonus_remaining}</td>
+          <td>${!u.is_active ? `<button onclick="activateUser(${u.id})" style="padding:4px 10px;font-size:0.7rem;border-radius:6px;">Activate</button>` : '—'}</td>
         </tr>`;
       });
     }
+  async function activateUser(id) {
+    const res = await fetch('/admin/activate-user', {
+      method: 'POST',
+      headers: { 'x-admin-key': adminKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: id })
+    });
+    if (res.ok) { alert('User activated!'); loadDashboard(); }
+    else alert('Failed to activate.');
+  }
   </script>
 </body>
 </html>

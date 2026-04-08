@@ -18,7 +18,13 @@ async function runDraw(weekStart) {
     return existing;
   }
 
-  const entries = q.getEntriesForWeek.all(weekStart);
+  // Only include entries from currently active users (prevents cancel loophole)
+  const allEntries = q.getEntriesForWeek.all(weekStart);
+  const entries = allEntries.filter(e => {
+    if (!e.user_id) return true; // postal entries always included
+    const u = q.getUserById.get(e.user_id);
+    return u && u.is_active === 1;
+  });
 
   if (entries.length === 0) {
     console.log(`[draw] No entries for week ${weekStart} — draw skipped.`);
@@ -56,10 +62,13 @@ async function runDraw(weekStart) {
       await email.sendWinnerNotification(winnerUser, potAmount, weekStart, entries.length);
     }
 
+    // BCC admin with draw summary
+    await email.sendAdminDrawSummary(winnerHandle, winnerUser ? winnerUser.email : 'postal entry', potAmount, weekStart, entries.length);
+
     // Notify all other active subscribers of the result
     const allActive = q.getAllActiveUsers.all();
     for (const user of allActive) {
-      if (winnerUser && user.id === winnerUser.id) continue; // winner already emailed
+      if (winnerUser && user.id === winnerUser.id) continue;
       try {
         await email.sendDrawResult(user, winnerHandle, potAmount, weekStart);
       } catch (e) {

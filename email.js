@@ -204,6 +204,32 @@ async function sendPaymentFailed(user) {
   });
 }
 
+async function sendAdminDrawSummary(winnerHandle, winnerEmail, potAmount, weekStart, totalEntries) {
+  const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' });
+  await transporter.sendMail({
+    from: FROM,
+    to:   process.env.EMAIL_USER,
+    subject: `[QUID Admin] Draw complete — @${winnerHandle} won ${fmt.format(potAmount)} — week ${weekStart}`,
+    html: html('Draw Summary', `
+      <div class="card">
+        <div class="label">Draw completed</div>
+        <div class="amount">${fmt.format(potAmount)}</div>
+        <hr>
+        <p class="body-text">
+          <strong style="color:#fff;">Winner:</strong> @${winnerHandle}<br>
+          <strong style="color:#fff;">Email:</strong> ${winnerEmail}<br>
+          <strong style="color:#fff;">Week:</strong> ${weekStart}<br>
+          <strong style="color:#fff;">Total entries:</strong> ${totalEntries}<br>
+          <strong style="color:#fff;">Prize (90%):</strong> ${fmt.format(potAmount)}<br>
+          <strong style="color:#fff;">Your cut (10%):</strong> ${fmt.format(totalEntries * 0.1)}
+        </p>
+        <hr>
+        <p class="body-text">Reply to the winner's email with payment instructions within 5 working days.</p>
+      </div>
+    `),
+  });
+}
+
 async function sendReferralBonus(referrer, newHandle) {
   const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
   await transporter.sendMail({
@@ -236,4 +262,5 @@ module.exports = {
   sendPaymentConfirmation,
   sendPaymentFailed,
   sendReferralBonus,
+  sendAdminDrawSummary,
 };
