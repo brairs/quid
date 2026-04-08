@@ -88,7 +88,7 @@ function nextWeekStart() {
 // ── PREPARED STATEMENTS ───────────────────────────────────────────────────────
 
 const q = {
-  createUser:       db.prepare(`INSERT INTO users (name, email, handle, stripe_customer_id, bonus_remaining, referral_code, referred_by) VALUES (@name, @email, @handle, @stripe_customer_id, 5, @referral_code, @referred_by)`),
+  createUser:       db.prepare(`INSERT INTO users (name, email, handle, stripe_customer_id, bonus_remaining, referral_code, referred_by) VALUES (@name, @email, @handle, @stripe_customer_id, @bonus_remaining, @referral_code, @referred_by)`),
   getUserByReferralCode: db.prepare(`SELECT * FROM users WHERE referral_code=?`),
   addBonusEntries:  db.prepare(`UPDATE users SET bonus_remaining=bonus_remaining+@n WHERE id=@id`),
   activateUser:     db.prepare(`UPDATE users SET is_active=1, stripe_subscription_id=@sub_id WHERE stripe_customer_id=@cust_id`),

@@ -72,6 +72,15 @@ app.get('/api/referral', (req, res) => {
   res.json({ code: user.referral_code, handle: user.handle });
 });
 
+/** Validate a referral code (for the popup) */
+app.get('/api/referral/validate', (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).json({ error: 'code required' });
+  const user = q.getUserByReferralCode.get(code.toUpperCase());
+  if (!user) return res.status(404).json({ error: 'not found' });
+  res.json({ handle: user.handle });
+});
+
 app.post('/api/checkout', async (req, res) => {
   const { name, email: userEmail, handle, ref } = req.body;
 
@@ -104,11 +113,13 @@ app.post('/api/checkout', async (req, res) => {
       try {
         // Look up referrer
         const referrer = ref ? q.getUserByReferralCode.get(ref.toUpperCase()) : null;
+        // Referred users get 5 signup bonus + 3 referral bonus = 8 bonus entries
         q.createUser.run({
           name,
           email:              userEmail,
           handle:             cleanHandle,
           stripe_customer_id: customer.id,
+          bonus_remaining:    referrer ? 8 : 5,
           referral_code:      generateReferralCode(),
           referred_by:        referrer ? referrer.id : null,
         });
