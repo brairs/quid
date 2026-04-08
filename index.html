@@ -4,6 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QUID — £1 a Week. One Winner.</title>
+
+  <!-- SEO -->
+  <meta name="description" content="QUID is a weekly prize draw. Pay £4/month, get 4 entries every Monday. One random winner takes the entire pot. Join thousands of members." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://quid-production.up.railway.app" />
+
+  <!-- Open Graph (WhatsApp, Facebook, Discord previews) -->
+  <meta property="og:title" content="QUID — £1 a Week. One Winner Takes the Pot." />
+  <meta property="og:description" content="Join the UK's fastest growing weekly prize draw. £4/month gets you 4 entries every Monday. Could you win this week's pot?" />
+  <meta property="og:url" content="https://quid-production.up.railway.app" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://quid-production.up.railway.app/og-image.png" />
+
+  <!-- Twitter/X card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="QUID — £1 a Week. One Winner." />
+  <meta name="twitter:description" content="Weekly prize draw. £4/month. One random winner every Monday. Join now." />
+  <meta name="twitter:image" content="https://quid-production.up.railway.app/og-image.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💜</text></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💜</text></svg>" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -859,6 +881,16 @@
         <strong style="color:#fff;">4. No commitment</strong><br>
         Cancel any time before the next billing cycle.
       </p>
+      <hr style="border:none;border-top:1px solid rgba(130,80,255,0.15);margin:24px 0;" />
+      <p style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(180,160,255,0.35);margin-bottom:16px;">FAQ</p>
+      <div style="font-size:0.82rem;color:rgba(200,180,255,0.55);line-height:1.8;display:flex;flex-direction:column;gap:14px;">
+        <div><strong style="color:rgba(220,200,255,0.8);">How do I get paid if I win?</strong><br>We'll email you the same day. Reply with your UK bank details and we'll transfer within 5 working days.</div>
+        <div><strong style="color:rgba(220,200,255,0.8);">When exactly is the draw?</strong><br>Every Monday at 8:00pm UK time. The winner is emailed immediately and posted on the site.</div>
+        <div><strong style="color:rgba(220,200,255,0.8);">Can I cancel anytime?</strong><br>Yes — cancel before your next billing date and you won't be charged again. You keep your entries for the current week.</div>
+        <div><strong style="color:rgba(220,200,255,0.8);">Is this legal?</strong><br>Yes. QUID is a free prize draw under UK law. A free postal entry route means no gambling licence is required.</div>
+        <div><strong style="color:rgba(220,200,255,0.8);">Why do I only get 90% of the pot?</strong><br>A 10% platform fee covers running costs — servers, payment processing, and paying out winners. This is clearly stated in the T&Cs.</div>
+      </div>
+      <br>
       <button class="btn btn-primary" onclick="closeLearnModal();openModal();">Join now — £1/week</button>
       <button class="btn btn-ghost"   onclick="closeLearnModal()">Close</button>
     </div>
@@ -1332,6 +1364,39 @@
     } catch(e) {
       msg.style.color='#ff6060'; msg.textContent='Something went wrong.';
     }
+  }
+  // ── COOKIE CONSENT ──────────────────────────────────────────────────────────
+  (function() {
+    if (localStorage.getItem('quid_cookie_ok')) return;
+    const bar = document.createElement('div');
+    bar.style.cssText = `
+      position:fixed;bottom:0;left:0;right:0;z-index:9997;
+      background:rgba(10,6,24,0.97);border-top:1px solid rgba(150,100,255,0.2);
+      padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+      gap:16px;flex-wrap:wrap;font-family:'Helvetica Neue',Arial,sans-serif;
+      backdrop-filter:blur(12px);
+    `;
+    bar.innerHTML = `
+      <span style="font-size:0.72rem;color:rgba(180,160,255,0.45);line-height:1.5;flex:1;min-width:200px;">
+        We use cookies to keep you signed in and improve your experience.
+        <a href="#" onclick="return false;" style="color:rgba(150,100,255,0.6);text-decoration:underline;">Learn more</a>
+      </span>
+      <button onclick="acceptCookies()" style="background:linear-gradient(135deg,#7c3aed,#b44eff);border:none;
+        border-radius:10px;padding:9px 20px;color:#fff;font-size:0.75rem;font-weight:600;
+        cursor:pointer;white-space:nowrap;letter-spacing:0.05em;font-family:'Helvetica Neue',Arial,sans-serif;">
+        Got it
+      </button>
+    `;
+    document.body.appendChild(bar);
+  })();
+
+  function acceptCookies() {
+    localStorage.setItem('quid_cookie_ok', '1');
+    const bar = document.querySelector('[data-cookie-bar]');
+    // find and remove the cookie bar
+    document.body.querySelectorAll('div').forEach(el => {
+      if (el.innerHTML.includes('Got it') && el.style.position === 'fixed' && el.style.bottom === '0px') el.remove();
+    });
   }
   </script>
 </body>
