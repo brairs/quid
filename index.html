@@ -181,7 +181,7 @@
 
     /* ── STATS ── */
     .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-    .stat {
+    .stat { display:flex; flex-direction:column; justify-content:center;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(130,80,255,0.14);
       border-radius: 14px;
@@ -195,7 +195,7 @@
     .stat:nth-child(3) .stat-value { color: var(--p3); text-shadow: 0 0 12px rgba(79,139,255,0.5); }
 
     /* ── COUNTDOWN ── */
-    .countdown-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .countdown-row { display: flex; align-items: center; justify-content: flex-start; gap: 12px; }
     .countdown-label { font-size: 0.67rem; letter-spacing: 0.17em; text-transform: uppercase; color: rgba(180,160,255,0.32); white-space: nowrap; }
     .countdown-timer {
       font-size: 1.08rem; font-weight: 600; letter-spacing: 0.1em;
@@ -598,7 +598,7 @@
       <div class="col-right">
         <div class="stats">
           <div class="stat">
-            <div class="stat-value" id="memberStat" style="font-size:0.75rem;letter-spacing:0.01em;">Growing</div>
+            <div class="stat-value" id="memberStat" style="font-size:0.68rem;letter-spacing:0.06em;line-height:1.3;color:rgba(180,160,255,0.6)!important;text-shadow:none!important;">Fast<br>Growing</div>
             <div class="stat-label">Members</div>
           </div>
           <div class="stat">
