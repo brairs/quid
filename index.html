@@ -1102,15 +1102,19 @@
     document.getElementById('entryCount').textContent = n;
   }
 
-  // ── URGENCY COUNTER — drifts slowly to feel live ──
+  // ── URGENCY COUNTER — same for every visitor, grows from fixed epoch ──
   (function() {
-    let base = 183;
-    function nudge() {
-      base += Math.floor(Math.random() * 3); // occasionally tick up
-      document.getElementById('urgencyCount').textContent = base;
-      setTimeout(nudge, 18000 + Math.random() * 24000); // every ~18-42s
+    const EPOCH = new Date('2026-04-08T12:00:00Z').getTime();
+    const BASE  = 183;
+    function calc() {
+      const ticks = Math.floor(Math.max(0, Date.now() - EPOCH) / (5 * 60 * 1000));
+      return BASE + ticks;
     }
-    setTimeout(nudge, 20000);
+    function nudge() {
+      document.getElementById('urgencyCount').textContent = calc();
+    }
+    nudge();
+    setInterval(nudge, 5 * 60 * 1000);
   })();
 
   // ── LIVE STATS from backend ──
