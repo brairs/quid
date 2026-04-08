@@ -615,26 +615,27 @@
         </div>
 
         <div class="footnote">£4 / month &nbsp;·&nbsp; 4 weekly entries &nbsp;·&nbsp; winner takes 90% of the pot</div>
-      </div>
-    </div>
 
-    <!-- REFERRAL LOOKUP -->
-    <div style="margin-top:16px;text-align:center;">
-      <div style="font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(180,160,255,0.25);margin-bottom:10px;">Already a member?</div>
-      <div style="display:inline-flex;gap:8px;align-items:center;background:rgba(14,8,32,0.6);border:1px solid rgba(150,100,255,0.15);border-radius:14px;padding:8px 10px;">
-        <input id="refEmail" type="email" placeholder="Your email"
-          style="background:transparent;border:none;outline:none;color:rgba(200,180,255,0.7);
-                 font-size:0.75rem;font-family:'Helvetica Neue',Arial,sans-serif;width:180px;padding:2px 4px;" />
-        <button onclick="fetchRefLink()"
-          style="background:rgba(130,60,255,0.2);border:1px solid rgba(150,100,255,0.2);
-                 border-radius:9px;padding:6px 12px;color:rgba(200,180,255,0.6);
-                 font-size:0.7rem;cursor:pointer;white-space:nowrap;font-family:'Helvetica Neue',Arial,sans-serif;">Get link</button>
-      </div>
-      <div id="refLinkOut" style="display:none;margin-top:10px;font-size:0.7rem;color:rgba(180,160,255,0.4);">
-        Your link:&nbsp;
-        <span id="refLinkVal" onclick="copyRefLink()"
-          style="color:#b44eff;cursor:pointer;text-decoration:underline;letter-spacing:0.01em;"></span>
-        &nbsp;<span style="color:rgba(180,160,255,0.2);font-size:0.62rem;">· click to copy</span>
+        <!-- REFERRAL LOOKUP -->
+        <div style="border-top:1px solid rgba(130,80,255,0.1);margin-top:16px;padding-top:14px;">
+          <div style="font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(180,160,255,0.25);margin-bottom:10px;text-align:center;">Already a member · get your referral link</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="refEmail" type="email" placeholder="Your email"
+              style="flex:1;background:rgba(130,60,255,0.08);border:1px solid rgba(150,100,255,0.15);
+                     border-radius:10px;padding:9px 12px;outline:none;color:rgba(200,180,255,0.7);
+                     font-size:0.75rem;font-family:'Helvetica Neue',Arial,sans-serif;" />
+            <button onclick="fetchRefLink()"
+              style="background:rgba(130,60,255,0.15);border:1px solid rgba(150,100,255,0.2);
+                     border-radius:10px;padding:9px 14px;color:rgba(200,180,255,0.55);
+                     font-size:0.72rem;cursor:pointer;white-space:nowrap;font-family:'Helvetica Neue',Arial,sans-serif;">Get link</button>
+          </div>
+          <div id="refLinkOut" style="display:none;margin-top:10px;font-size:0.68rem;color:rgba(180,160,255,0.35);text-align:center;">
+            Your link:&nbsp;
+            <span id="refLinkVal" onclick="copyRefLink()"
+              style="color:#b44eff;cursor:pointer;text-decoration:underline;"></span>
+            &nbsp;<span style="color:rgba(180,160,255,0.2);font-size:0.6rem;">· click to copy</span>
+          </div>
+        </div>
       </div>
     </div>
 
