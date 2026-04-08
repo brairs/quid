@@ -688,6 +688,7 @@
         <button class="btn btn-primary" onclick="submitJoin()">Start subscription — £4/mo</button>
         <button class="btn btn-ghost"   onclick="closeModal()">Cancel</button>
       </div>
+      <div id="joinError" style="display:none;font-size:0.72rem;color:#ff6b6b;text-align:center;margin-top:-8px;padding:8px 12px;background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.2);border-radius:10px;"></div>
       <div style="font-size:0.6rem;color:rgba(180,160,255,0.25);text-align:center;letter-spacing:0.06em;">
         Recurring monthly subscription. Cancel before next billing date to stop charges.
       </div>
@@ -1254,7 +1255,9 @@
     const name  = document.getElementById('joinName').value.trim();
     const email = document.getElementById('joinEmail').value.trim();
     const hand  = document.getElementById('joinHandle').value.trim();
-    if (!name || !email || !hand) { alert('Please fill in all fields.'); return; }
+    const errEl = document.getElementById('joinError');
+    errEl.style.display = 'none';
+    if (!name || !email || !hand) { errEl.textContent = 'Please fill in all fields.'; errEl.style.display = 'block'; return; }
 
     const btn = document.querySelector('#joinModal .btn-primary');
     btn.textContent = 'Redirecting to payment…';
@@ -1275,7 +1278,9 @@
       // Redirect to Stripe checkout
       window.location.href = data.url;
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      const errEl = document.getElementById('joinError');
+      errEl.textContent = err.message || 'Something went wrong. Please try again.';
+      errEl.style.display = 'block';
       btn.textContent = 'Start subscription — £4/mo';
       btn.disabled    = false;
     }
