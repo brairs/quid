@@ -29,8 +29,9 @@ async function runDraw(weekStart) {
   const winnerIdx   = crypto.randomInt(0, entries.length);
   const winnerEntry = entries[winnerIdx];
 
-  // Pot = total entries × £1
-  const potAmount = entries.length;
+  // Pot = total entries × £1, winner receives 90% (10% platform fee)
+  const grossPot  = entries.length;
+  const potAmount = Math.floor(grossPot * 0.9 * 100) / 100;
 
   // Look up winner details
   const winnerUser   = winnerEntry.user_id ? q.getUserById.get(winnerEntry.user_id) : null;
