@@ -96,6 +96,7 @@ async function sendWelcome(user, entriesThisWeek) {
 
 async function sendWinnerNotification(user, potAmount, weekStart, totalEntries) {
   const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' });
+  const grossPot = Math.round(potAmount / 0.9 * 100) / 100;
   await transporter.sendMail({
     from: FROM,
     to:   user.email,
@@ -109,6 +110,12 @@ async function sendWinnerNotification(user, potAmount, weekStart, totalEntries) 
           Your entry <span class="highlight">@${user.handle}</span> was selected at random
           from <span class="highlight">${totalEntries} entries</span> in the draw for
           week starting <span class="highlight">${weekStart}</span>.
+        </p>
+        <hr>
+        <p class="body-text">
+          Total pot: <span class="highlight">${fmt.format(grossPot)}</span><br>
+          Platform fee (10%): <span class="highlight">${fmt.format(grossPot - potAmount)}</span><br>
+          <strong style="color:#fff;">Your prize: ${fmt.format(potAmount)}</strong>
         </p>
         <hr>
         <p class="body-text">
