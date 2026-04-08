@@ -7,37 +7,150 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: 'Inter', sans-serif; background: #07060f; color: #fff;
-      display: flex; align-items: center; justify-content: center; }
-    .card {
-      text-align: center; padding: 48px 40px; max-width: 420px; width: 100%;
-      background: rgba(14,8,32,0.8); border: 1px solid rgba(150,100,255,0.2);
-      border-radius: 28px; box-shadow: 0 0 80px rgba(100,40,220,0.2);
+    html, body {
+      min-height: 100%; font-family: 'Inter', sans-serif;
+      background: #07060f; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px;
     }
-    .icon { font-size: 3rem; margin-bottom: 16px; }
-    h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em;
-         background: linear-gradient(135deg,#fff 20%,#b44eff 60%,#4f8bff 100%);
-         -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    p { margin-top: 14px; font-size: 0.85rem; color: rgba(200,180,255,0.5); line-height: 1.7; }
-    .pill { display: inline-block; margin-top: 20px; background: rgba(130,60,255,0.15);
-            border: 1px solid rgba(150,100,255,0.25); border-radius: 99px;
-            padding: 6px 18px; font-size: 0.75rem; color: rgba(200,180,255,0.6); }
-    a { display: inline-block; margin-top: 28px;
-        background: linear-gradient(135deg,#7c3aed,#b44eff 60%,#4f8bff);
-        color: #fff; text-decoration: none; border-radius: 12px; padding: 13px 28px;
-        font-size: 0.82rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse at 30% 20%, rgba(120,40,255,0.12) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 80%, rgba(60,80,255,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .card {
+      position: relative; z-index: 1;
+      text-align: center; padding: 48px 36px; max-width: 440px; width: 100%;
+      background: rgba(14,8,32,0.85); border: 1px solid rgba(150,100,255,0.2);
+      border-radius: 28px; box-shadow: 0 0 80px rgba(100,40,220,0.2), 0 0 0 1px rgba(130,80,255,0.05);
+      backdrop-filter: blur(20px);
+      animation: fadeUp 0.5s cubic-bezier(.22,.68,0,1.1);
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    .logo { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.04em;
+            background: linear-gradient(135deg,#fff 20%,#b44eff 60%,#4f8bff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 28px; }
+
+    .checkmark {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(130,60,255,0.15); border: 1px solid rgba(150,100,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 1.8rem;
+      box-shadow: 0 0 24px rgba(130,60,255,0.3);
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: #fff; margin-bottom: 10px; }
+    .sub { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+           color: rgba(180,160,255,0.35); margin-bottom: 24px; }
+    p { font-size: 0.82rem; color: rgba(200,180,255,0.5); line-height: 1.75; margin-bottom: 8px; }
+
+    .entries-box {
+      margin: 24px 0;
+      background: rgba(130,60,255,0.1); border: 1px solid rgba(150,100,255,0.2);
+      border-radius: 16px; padding: 20px;
+    }
+    .entries-label { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+                     color: rgba(180,160,255,0.35); margin-bottom: 6px; }
+    .entries-num { font-size: 2.4rem; font-weight: 700; color: #b44eff;
+                   text-shadow: 0 0 20px rgba(180,78,255,0.4); letter-spacing: -0.03em; }
+    .entries-sub { font-size: 0.72rem; color: rgba(180,160,255,0.4); margin-top: 4px; }
+
+    .steps {
+      display: flex; flex-direction: column; gap: 12px;
+      margin: 24px 0; text-align: left;
+    }
+    .step { display: flex; align-items: flex-start; gap: 12px; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(130,60,255,0.2); border: 1px solid rgba(150,100,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; color: rgba(180,160,255,0.6); font-weight: 600; margin-top: 1px;
+    }
+    .step-text { font-size: 0.78rem; color: rgba(200,180,255,0.5); line-height: 1.5; }
+    .step-text strong { color: rgba(220,200,255,0.8); }
+
+    .draw-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(130,60,255,0.1); border: 1px solid rgba(150,100,255,0.2);
+      border-radius: 99px; padding: 8px 18px;
+      font-size: 0.72rem; color: rgba(180,160,255,0.5); margin-bottom: 28px;
+    }
+    .draw-dot { width: 6px; height: 6px; border-radius: 50%; background: #b44eff;
+                box-shadow: 0 0 6px rgba(180,78,255,0.8); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .btn {
+      display: block; width: 100%;
+      background: linear-gradient(135deg,#7c3aed,#b44eff 60%,#4f8bff);
+      color: #fff; text-decoration: none; border-radius: 14px; padding: 15px 28px;
+      font-size: 0.82rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+      border: none; cursor: pointer;
+    }
+    .share-text { font-size: 0.68rem; color: rgba(180,160,255,0.25); margin-top: 16px; letter-spacing: 0.05em; }
+    .share-text span { color: rgba(150,100,255,0.5); cursor: pointer; text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="icon">🎟</div>
-    <h1>You're in the pool</h1>
-    <p>Your subscription is confirmed. You've been entered into this Monday's draw
-       with your 4 monthly entries + 5 signup bonus tickets.</p>
-    <p>Check your inbox — a welcome email is on its way.</p>
-    <div class="pill">🏆 Draw runs every Monday at 12:00 noon</div>
-    <br>
-    <a href="/">Back to QUID →</a>
+    <div class="logo">QUID</div>
+    <div class="checkmark">🎟</div>
+    <h1>You're in the draw</h1>
+    <div class="sub">Subscription confirmed</div>
+
+    <div class="entries-box">
+      <div class="entries-label">Your entries this week</div>
+      <div class="entries-num" id="entryCount">9</div>
+      <div class="entries-sub">subscription + signup bonus · equal odds to every other entry</div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Check your email</strong> — welcome email with your referral link is on its way.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Share your referral link</strong> — get +2 bonus entries for every friend who joins.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Wait for Monday 8pm</strong> — one random entry wins the pot. You'll be emailed if you win.</div>
+      </div>
+    </div>
+
+    <div class="draw-pill">
+      <div class="draw-dot"></div>
+      Next draw — Monday at 8:00pm UK time
+    </div>
+
+    <a class="btn" href="/">Back to QUID →</a>
+    <div class="share-text">Enjoying QUID? <span onclick="copyRef()">Copy your referral link</span> and share it.</div>
   </div>
+
+  <script>
+    const email = sessionStorage.getItem('quid_email');
+    if (email) {
+      fetch(`/api/entries?email=${encodeURIComponent(email)}`)
+        .then(r => r.json())
+        .then(d => { if (d.entries) document.getElementById('entryCount').textContent = d.entries; })
+        .catch(() => {});
+    }
+
+    async function copyRef() {
+      if (!email) { alert('Sign in to get your referral link.'); return; }
+      const res = await fetch(`/api/referral?email=${encodeURIComponent(email)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const link = `${window.location.origin}/?ref=${data.code}`;
+      navigator.clipboard.writeText(link).then(() => {
+        const el = document.querySelector('.share-text span');
+        el.textContent = 'Copied!';
+        setTimeout(() => { el.textContent = 'Copy your referral link'; }, 2000);
+      });
+    }
+  </script>
 </body>
 </html>

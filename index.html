@@ -539,11 +539,21 @@
     .stage { padding-bottom: 44px; }
 
     @media (max-width: 640px) {
-      .card { grid-template-columns: 1fr; padding: 28px 22px; gap: 22px; }
+      .stage { padding: 16px 12px 40px; }
+      .wordmark h1 { font-size: 3rem; }
+      .card { grid-template-columns: 1fr; padding: 22px 18px; gap: 20px; border-radius: 20px; }
       .v-divider { width: auto; height: 1px; align-self: auto; background: linear-gradient(90deg, transparent, rgba(130,80,255,0.25), transparent); }
       .col-left  { padding-right: 0; }
       .col-right { padding-left: 0; }
-      .site-footer { gap: 12px; }
+      .pot-amount { font-size: 3rem; }
+      .stat-grid { gap: 8px; }
+      .stat-box { padding: 12px 8px; }
+      .stat-val { font-size: 1.1rem; }
+      .btn { padding: 13px 16px; font-size: 0.78rem; }
+      .countdown-timer { font-size: 0.9rem; }
+      .site-footer { gap: 10px; flex-wrap: wrap; justify-content: center; }
+      .winner-strip { font-size: 0.78rem; }
+      #cookieBar { bottom: 16px; left: 16px; right: 16px; transform: none; white-space: normal; border-radius: 14px; }
     }
   </style>
 </head>
@@ -1220,7 +1230,9 @@
 
   loadStats();
   checkUserEntries();
-  setInterval(loadStats, 30000); // refresh every 30s
+  setInterval(loadStats, 30000);
+  // Re-check entries every 10s in case they just came back from payment
+  setInterval(checkUserEntries, 10000);
 
   async function fetchRefLink() {
     const email = document.getElementById('refEmail').value.trim();
@@ -1369,21 +1381,26 @@
   (function() {
     if (localStorage.getItem('quid_cookie_ok')) return;
     const bar = document.createElement('div');
+    bar.id = 'cookieBar';
     bar.style.cssText = `
-      position:fixed;bottom:0;left:0;right:0;z-index:9997;
-      background:rgba(10,6,24,0.97);border-top:1px solid rgba(150,100,255,0.2);
-      padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
-      gap:16px;flex-wrap:wrap;font-family:'Helvetica Neue',Arial,sans-serif;
-      backdrop-filter:blur(12px);
+      position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:9997;
+      background:rgba(10,6,24,0.95);border:1px solid rgba(150,100,255,0.25);
+      border-radius:16px;padding:12px 16px 12px 20px;
+      display:flex;align-items:center;gap:14px;
+      font-family:'Helvetica Neue',Arial,sans-serif;
+      backdrop-filter:blur(16px);
+      box-shadow:0 8px 32px rgba(100,40,255,0.25);
+      white-space:nowrap;
+      animation:slideUp 0.4s cubic-bezier(.22,.68,0,1.2);
     `;
     bar.innerHTML = `
-      <span style="font-size:0.72rem;color:rgba(180,160,255,0.45);line-height:1.5;flex:1;min-width:200px;">
-        We use cookies to keep you signed in and improve your experience.
-        <a href="#" onclick="return false;" style="color:rgba(150,100,255,0.6);text-decoration:underline;">Learn more</a>
+      <span style="font-size:0.7rem;color:rgba(180,160,255,0.4);white-space:normal;max-width:220px;line-height:1.4;">
+        We use cookies to improve your experience.
       </span>
       <button onclick="acceptCookies()" style="background:linear-gradient(135deg,#7c3aed,#b44eff);border:none;
-        border-radius:10px;padding:9px 20px;color:#fff;font-size:0.75rem;font-weight:600;
-        cursor:pointer;white-space:nowrap;letter-spacing:0.05em;font-family:'Helvetica Neue',Arial,sans-serif;">
+        border-radius:10px;padding:8px 16px;color:#fff;font-size:0.7rem;font-weight:600;
+        cursor:pointer;white-space:nowrap;letter-spacing:0.04em;font-family:'Helvetica Neue',Arial,sans-serif;
+        box-shadow:0 0 12px rgba(180,78,255,0.3);">
         Got it
       </button>
     `;
@@ -1392,11 +1409,8 @@
 
   function acceptCookies() {
     localStorage.setItem('quid_cookie_ok', '1');
-    const bar = document.querySelector('[data-cookie-bar]');
-    // find and remove the cookie bar
-    document.body.querySelectorAll('div').forEach(el => {
-      if (el.innerHTML.includes('Got it') && el.style.position === 'fixed' && el.style.bottom === '0px') el.remove();
-    });
+    const bar = document.getElementById('cookieBar');
+    if (bar) bar.remove();
   }
   </script>
 </body>
