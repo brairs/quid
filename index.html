@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QUID — £1 a Week. One Winner.</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --p1: #b44eff;   /* bright violet */
+      --p2: #7c3aed;   /* deep violet   */
+      --p3: #4f8bff;   /* electric blue */
+      --p4: #a78bfa;   /* soft lavender */
+      --bg: #07060f;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* ── WAVE CANVAS (background) ── */
+    #waveCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* ── VIGNETTE ── */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: radial-gradient(ellipse 75% 65% at 50% 50%,
+        transparent 15%,
+        rgba(7,6,15,0.50) 60%,
+        rgba(7,6,15,0.88) 100%);
+      pointer-events: none;
+    }
+
+    /* ── STAGE ── */
+    .stage {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* ── WORDMARK ── */
+    .wordmark { text-align: center; }
+    .wordmark h1 {
+      font-size: clamp(2.8rem, 5.5vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff 20%, var(--p1) 60%, var(--p3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .wordmark p {
+      margin-top: 7px;
+      font-size: 0.8rem;
+      color: rgba(180,160,255,0.5);
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    /* ── GLASS CARD ── */
+    .card {
+      width: min(880px, 96vw);
+      background: rgba(14,8,32,0.62);
+      backdrop-filter: blur(36px) saturate(140%);
+      -webkit-backdrop-filter: blur(36px) saturate(140%);
+      border: 1px solid rgba(150,100,255,0.18);
+      border-radius: 28px;
+      padding: 32px 40px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      box-shadow: 0 0 60px rgba(120,60,255,0.12), inset 0 1px 0 rgba(200,160,255,0.08);
+    }
+
+    .col-left  { display: flex; flex-direction: column; gap: 20px; padding-right: 38px; }
+    .col-right { display: flex; flex-direction: column; gap: 20px; padding-left:  38px; }
+
+    .v-divider {
+      width: 1px;
+      align-self: stretch;
+      background: linear-gradient(180deg,
+        transparent,
+        rgba(150,100,255,0.25) 30%,
+        rgba(80,140,255,0.25) 70%,
+        transparent);
+    }
+
+    /* ── POT ── */
+    .pot-label {
+      font-size: 0.67rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(180,160,255,0.45);
+      margin-bottom: 6px;
+    }
+    .pot-amount {
+      font-size: clamp(3.2rem, 6vw, 5.2rem);
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      background: linear-gradient(135deg, #fff 10%, var(--p1) 55%, var(--p3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .pot-sub {
+      margin-top: 7px;
+      font-size: 0.75rem;
+      color: rgba(180,160,255,0.35);
+    }
+
+    /* ── WINNER STRIP ── */
+    .winner-strip {
+      display: flex;
+      flex-direction: column;
+      background: rgba(100,60,220,0.12);
+      border: 1px solid rgba(130,80,255,0.22);
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.2s;
+    }
+    .winner-strip:hover { border-color: rgba(150,100,255,0.4); }
+    .winner-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--p1);
+      flex-shrink: 0;
+      animation: pulse 2s ease-in-out infinite;
+      box-shadow: 0 0 8px var(--p1);
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 4px var(--p1), 0 0 0 0 rgba(180,78,255,0.6); }
+      50%      { box-shadow: 0 0 10px var(--p1), 0 0 0 6px rgba(180,78,255,0); }
+    }
+    .winner-text { font-size: 0.74rem; color: rgba(200,180,255,0.5); line-height: 1.4; }
+    .winner-text strong { color: var(--p4); font-weight: 600; }
+
+    /* ── STATS ── */
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(130,80,255,0.14);
+      border-radius: 14px;
+      padding: 13px 8px;
+      text-align: center;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 600; letter-spacing: -0.03em; }
+    .stat-label { margin-top: 3px; font-size: 0.61rem; letter-spacing: 0.13em; text-transform: uppercase; color: rgba(180,160,255,0.32); }
+    .stat:nth-child(1) .stat-value { color: var(--p1); text-shadow: 0 0 12px rgba(180,78,255,0.5); }
+    .stat:nth-child(2) .stat-value { color: #fff; }
+    .stat:nth-child(3) .stat-value { color: var(--p3); text-shadow: 0 0 12px rgba(79,139,255,0.5); }
+
+    /* ── COUNTDOWN ── */
+    .countdown-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .countdown-label { font-size: 0.67rem; letter-spacing: 0.17em; text-transform: uppercase; color: rgba(180,160,255,0.32); white-space: nowrap; }
+    .countdown-timer {
+      font-size: 1.08rem; font-weight: 600; letter-spacing: 0.1em;
+      color: var(--p3);
+      background: rgba(79,139,255,0.1);
+      border: 1px solid rgba(79,139,255,0.25);
+      border-radius: 8px; padding: 5px 14px;
+      text-shadow: 0 0 10px rgba(79,139,255,0.6);
+    }
+
+    /* ── CTA ── */
+    .cta-row { display: flex; gap: 10px; }
+    .btn {
+      flex: 1; border: none; cursor: pointer;
+      border-radius: 12px; font-family: inherit;
+      font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 13px 10px;
+      transition: opacity 0.18s, transform 0.18s, box-shadow 0.18s;
+    }
+    .btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--p2), var(--p1) 60%, var(--p3));
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(120,60,255,0.35);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 32px rgba(120,60,255,0.55); }
+    .btn-ghost {
+      background: rgba(130,80,255,0.08);
+      border: 1px solid rgba(130,80,255,0.22);
+      color: rgba(200,180,255,0.7);
+    }
+
+    .footnote { font-size: 0.61rem; color: rgba(180,160,255,0.2); text-align: center; letter-spacing: 0.09em; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(5,3,14,0.82);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      width: min(420px, 100%);
+      background: #0c0818;
+      border: 1px solid rgba(130,80,255,0.22);
+      border-radius: 24px; padding: 36px;
+      display: flex; flex-direction: column; gap: 20px;
+      transform: translateY(18px); transition: transform 0.25s;
+      box-shadow: 0 0 60px rgba(100,50,220,0.2);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+    .modal h2 span { color: var(--p1); }
+    .modal p { font-size: 0.8rem; color: rgba(200,180,255,0.45); line-height: 1.65; }
+    .input-group { display: flex; flex-direction: column; gap: 8px; }
+    .input-group label { font-size: 0.67rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(180,160,255,0.35); }
+    .input-group input {
+      background: rgba(130,80,255,0.07);
+      border: 1px solid rgba(130,80,255,0.18);
+      border-radius: 10px; padding: 12px 14px;
+      font-family: inherit; font-size: 0.9rem; color: #fff; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-group input:focus { border-color: var(--p1); box-shadow: 0 0 0 3px rgba(180,78,255,0.12); }
+    .input-group input::placeholder { color: rgba(180,160,255,0.2); }
+    .modal-actions { display: flex; gap: 10px; }
+
+    /* ── LEGAL NOTE (free postal entry) ── */
+    .legal-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.65rem;
+      color: rgba(180,160,255,0.45);
+      letter-spacing: 0.06em;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .legal-note a, .legal-note button {
+      color: var(--p4);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      background: none; border: none; font-family: inherit;
+      font-size: inherit; letter-spacing: inherit;
+      padding: 0;
+    }
+    .legal-note a:hover, .legal-note button:hover { color: var(--p1); }
+
+    /* ── CARD-LEVEL LINKS ── */
+    .card-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      font-size: 0.62rem;
+      color: rgba(180,160,255,0.28);
+      letter-spacing: 0.07em;
+    }
+    .card-links button {
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: inherit;
+      color: rgba(180,160,255,0.38); letter-spacing: inherit;
+      text-decoration: underline; text-underline-offset: 2px;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .card-links button:hover { color: var(--p4); }
+    .card-links span { color: rgba(130,80,255,0.3); }
+
+    /* ── SITE FOOTER ── */
+    .site-footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 11;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 9px 20px;
+      background: rgba(7,5,18,0.85);
+      border-top: 1px solid rgba(130,80,255,0.1);
+      backdrop-filter: blur(12px);
+      flex-wrap: wrap;
+    }
+    .site-footer button, .site-footer a {
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 0.6rem;
+      color: rgba(180,160,255,0.35); letter-spacing: 0.09em;
+      text-decoration: none;
+      text-transform: uppercase;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .site-footer button:hover, .site-footer a:hover { color: var(--p4); }
+    .site-footer .sep { color: rgba(130,80,255,0.2); font-size: 0.55rem; }
+    .site-footer .contact { color: rgba(180,160,255,0.25); font-size: 0.58rem; letter-spacing: 0.05em; }
+
+    /* ── WIDE SCROLLABLE MODAL (T&C / Privacy) ── */
+    .modal-wide {
+      width: min(680px, 96vw);
+      max-height: 84vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(130,80,255,0.4) transparent;
+    }
+    .modal-wide::-webkit-scrollbar { width: 4px; }
+    .modal-wide::-webkit-scrollbar-thumb { background: rgba(130,80,255,0.4); border-radius: 4px; }
+
+    /* override base modal styles for wide variant */
+    .modal.modal-wide {
+      background: rgba(10,6,24,0.97);
+      border-color: rgba(150,80,255,0.22);
+      box-shadow:
+        0 0 80px rgba(100,40,220,0.22),
+        0 0 2px rgba(180,78,255,0.15),
+        inset 0 1px 0 rgba(200,160,255,0.06);
+    }
+    .modal.modal-wide h2 {
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #fff 20%, var(--p1) 60%, var(--p3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tc-body { display: flex; flex-direction: column; gap: 16px; }
+
+    .tc-section {
+      border-radius: 14px;
+      background: rgba(130,60,255,0.04);
+      border: 1px solid rgba(130,80,255,0.1);
+      padding: 14px 16px;
+      transition: border-color 0.2s;
+    }
+    .tc-section:hover { border-color: rgba(130,80,255,0.22); }
+
+    .tc-section h3 {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(130,80,255,0.18);
+      /* neon gradient text */
+      background: linear-gradient(90deg, var(--p1), var(--p3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .tc-section p, .tc-section li {
+      font-size: 0.74rem;
+      color: rgba(210,195,255,0.5);
+      line-height: 1.75;
+    }
+    .tc-section ul { padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+    .tc-section li::marker { color: var(--p1); }
+
+    .tc-highlight {
+      background: linear-gradient(135deg, rgba(124,58,237,0.14), rgba(79,139,255,0.10));
+      border: 1px solid rgba(150,100,255,0.28);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 0.75rem;
+      color: rgba(220,205,255,0.65);
+      line-height: 1.7;
+      box-shadow: 0 0 20px rgba(124,58,237,0.08), inset 0 1px 0 rgba(200,160,255,0.06);
+    }
+    .tc-highlight strong { color: var(--p1); text-shadow: 0 0 8px rgba(180,78,255,0.4); }
+
+    /* ── COLOUR WAVE — QUID title + pot amount (driven by JS) ── */
+    .wordmark h1, .pot-amount {
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    /* ── URGENCY BADGE ── */
+    .urgency-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: rgba(210,190,255,0.7);
+      letter-spacing: 0.04em;
+      background: rgba(130,60,255,0.1);
+      border: 1px solid rgba(130,80,255,0.2);
+      border-radius: 99px;
+      padding: 6px 14px;
+    }
+    .urgency-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #b44eff;
+      box-shadow: 0 0 8px #b44eff;
+      animation: pulse 1.6s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    .urgency-badge strong { color: #fff; font-weight: 600; }
+
+    /* ── YOUR ENTRIES PILL ── */
+    .entries-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.68rem;
+      color: rgba(180,160,255,0.45);
+      letter-spacing: 0.06em;
+      background: rgba(100,50,220,0.08);
+      border: 1px solid rgba(130,80,255,0.15);
+      border-radius: 99px;
+      padding: 5px 14px;
+      align-self: center;
+    }
+    .entries-pill span { color: var(--p1); font-weight: 600; font-size: 0.78rem; }
+
+    /* ── WINNER DROPDOWN ── */
+    .winner-strip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .winner-strip-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+    .winner-chevron {
+      font-size: 0.58rem;
+      color: rgba(180,160,255,0.35);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: transform 0.28s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .winner-strip.open .winner-chevron { transform: rotate(180deg); }
+
+    .winner-history {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(130,80,255,0.15);
+      max-height: 200px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(130,80,255,0.3) transparent;
+    }
+    .winner-history::-webkit-scrollbar { width: 3px; }
+    .winner-history::-webkit-scrollbar-thumb { background: rgba(130,80,255,0.3); border-radius: 3px; }
+    .winner-strip.open .winner-history { display: flex; }
+
+    .winner-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(100,50,220,0.08);
+      border: 1px solid rgba(130,80,255,0.1);
+    }
+    .winner-row-name { color: var(--p4); font-weight: 500; }
+    .winner-row-amt  { color: var(--p1); font-weight: 600; text-align: right; }
+    .winner-row-date { color: rgba(180,160,255,0.3); font-size: 0.6rem; text-align: right; white-space: nowrap; }
+
+    /* ── SUBSCRIPTION BONUS BANNER ── */
+    .sub-bonus {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,139,255,0.12));
+      border: 1px solid rgba(150,100,255,0.3);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      color: rgba(220,200,255,0.7);
+      line-height: 1.5;
+    }
+    .sub-bonus-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .sub-bonus strong { color: var(--p1); }
+
+    /* ── STAGE bottom padding for footer ── */
+    .stage { padding-bottom: 44px; }
+
+    @media (max-width: 640px) {
+      .card { grid-template-columns: 1fr; padding: 28px 22px; gap: 22px; }
+      .v-divider { width: auto; height: 1px; align-self: auto; background: linear-gradient(90deg, transparent, rgba(130,80,255,0.25), transparent); }
+      .col-left  { padding-right: 0; }
+      .col-right { padding-left: 0; }
+      .site-footer { gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="waveCanvas"></canvas>
+  <div class="vignette"></div>
+
+  <div class="stage">
+    <div class="wordmark">
+      <h1>QUID</h1>
+      <p>£1 a week &nbsp;·&nbsp; one winner</p>
+    </div>
+
+    <!-- URGENCY -->
+    <div class="urgency-badge">
+      <div class="urgency-dot"></div>
+      <strong id="urgencyCount">183</strong> people joined in the last 24 hours
+    </div>
+
+    <div class="card">
+      <div class="col-left">
+        <div>
+          <div class="pot-label">This week's pot</div>
+          <div class="pot-amount">£7,058</div>
+          <div class="pot-sub">7,058 members &nbsp;·&nbsp; £1 each this week</div>
+        </div>
+        <div class="winner-strip" id="winnerStrip" onclick="toggleWinners()">
+          <div class="winner-strip-header">
+            <div class="winner-strip-left">
+              <div class="winner-dot"></div>
+              <div class="winner-text">
+                Last winner — <strong>@jay_banks</strong> took home <strong>£6,841</strong> on 31 Mar 2026
+              </div>
+            </div>
+            <div class="winner-chevron">Past winners ▼</div>
+          </div>
+          <div class="winner-history" id="winnerHistory">
+            <div class="winner-row"><span class="winner-row-name">@jay_banks</span><span class="winner-row-amt">£6,841</span><span class="winner-row-date">31 Mar 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@chloe_r</span><span class="winner-row-amt">£7,203</span><span class="winner-row-date">24 Mar 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@mike_t99</span><span class="winner-row-amt">£6,950</span><span class="winner-row-date">17 Mar 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@priya_k</span><span class="winner-row-amt">£7,412</span><span class="winner-row-date">10 Mar 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@dan_fox</span><span class="winner-row-amt">£6,680</span><span class="winner-row-date">03 Mar 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@sarah_m</span><span class="winner-row-amt">£7,150</span><span class="winner-row-date">24 Feb 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@liam_j</span><span class="winner-row-amt">£6,890</span><span class="winner-row-date">17 Feb 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@amara_o</span><span class="winner-row-amt">£7,320</span><span class="winner-row-date">10 Feb 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@tom_h</span><span class="winner-row-amt">£6,750</span><span class="winner-row-date">03 Feb 2026</span></div>
+            <div class="winner-row"><span class="winner-row-name">@nina_c</span><span class="winner-row-amt">£7,580</span><span class="winner-row-date">27 Jan 2026</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="v-divider"></div>
+
+      <div class="col-right">
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value">7,058</div>
+            <div class="stat-label">Members</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">£1</div>
+            <div class="stat-label">Per week</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="weekNum">—</div>
+            <div class="stat-label">Week no.</div>
+          </div>
+        </div>
+
+        <div class="countdown-row">
+          <span class="countdown-label">Next draw in</span>
+          <span class="countdown-timer" id="countdown">--:--:--</span>
+        </div>
+
+        <!-- ENTRIES PILL -->
+        <div class="entries-pill">
+          🎟 Your entries this week: <span id="entryCount">0</span>
+        </div>
+
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="openModal()">Subscribe — £4/mo</button>
+          <button class="btn btn-ghost"   onclick="openLearnModal()">How it works</button>
+        </div>
+
+        <!-- FREE POSTAL ENTRY — required UK compliance notice -->
+        <div class="legal-note">
+          ✉ Free Postal Entry available — no purchase necessary.
+          <button onclick="openTC()" aria-label="View Terms and Conditions">See T&amp;Cs</button>
+        </div>
+
+        <div class="footnote">£4 / month &nbsp;·&nbsp; 4 weekly entries &nbsp;·&nbsp; winner takes all</div>
+      </div>
+    </div>
+
+    <!-- CARD-LEVEL LINKS -->
+    <div class="card-links">
+      <button onclick="openTC()">Terms &amp; Conditions</button>
+      <span>·</span>
+      <button onclick="openPrivacy()">Privacy Policy</button>
+      <span>·</span>
+      <button onclick="openTC()">Free Entry Route</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <button onclick="openTC()">Terms &amp; Conditions</button>
+    <span class="sep">|</span>
+    <button onclick="openPrivacy()">Privacy Policy</button>
+    <span class="sep">|</span>
+    <span class="contact">Contact: hello@quid.co.uk</span>
+    <span class="sep">|</span>
+    <span class="contact">QUID is a free prize draw. 18+ UK residents only.</span>
+  </footer>
+
+  <!-- JOIN MODAL -->
+  <div class="modal-overlay" id="joinModal">
+    <div class="modal">
+      <h2>Subscribe to <span>QUID</span></h2>
+
+      <!-- BONUS BANNER -->
+      <div class="sub-bonus">
+        <div class="sub-bonus-icon">🎁</div>
+        <div><strong>Sign-up bonus — 5 extra tickets free</strong> on your first month. That's 9 entries in week one, all at equal odds.</div>
+      </div>
+
+      <p style="font-size:0.76rem;color:rgba(200,180,255,0.45);line-height:1.6;">
+        <strong style="color:#fff;">£4 / month</strong> · 4 weekly draw entries · cancel anytime<br>
+        Billed monthly. No hidden charges. First month includes 5 bonus entries.
+      </p>
+
+      <div class="input-group">
+        <label>Your name</label>
+        <input type="text" placeholder="e.g. Alex Johnson" id="joinName" />
+      </div>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" placeholder="you@email.com" id="joinEmail" />
+      </div>
+      <div class="input-group">
+        <label>Username (shown on wins)</label>
+        <input type="text" placeholder="@handle" id="joinHandle" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="submitJoin()">Start subscription — £4/mo</button>
+        <button class="btn btn-ghost"   onclick="closeModal()">Cancel</button>
+      </div>
+      <div style="font-size:0.6rem;color:rgba(180,160,255,0.25);text-align:center;letter-spacing:0.06em;">
+        Recurring monthly subscription. Cancel before next billing date to stop charges.
+      </div>
+    </div>
+  </div>
+
+  <!-- TERMS & CONDITIONS MODAL -->
+  <div class="modal-overlay" id="tcModal">
+    <div class="modal modal-wide">
+      <h2>Terms &amp; <span>Conditions</span></h2>
+      <p style="font-size:0.7rem;color:rgba(180,160,255,0.35);">Last updated: April 2026 &nbsp;·&nbsp; QUID Free Prize Draw</p>
+
+      <div class="tc-highlight">
+        <strong>No purchase necessary.</strong> A free postal entry route exists and carries equal odds to paid entries. See Section 5 for details.
+      </div>
+
+      <div class="tc-body">
+
+        <div class="tc-section">
+          <h3>1. Eligibility</h3>
+          <ul>
+            <li>Open to UK residents aged <strong style="color:#fff;">18 years or older</strong> only.</li>
+            <li>Employees of QUID, their immediate families, and associated third parties are excluded.</li>
+            <li>By entering, you confirm you meet the eligibility criteria.</li>
+            <li>QUID reserves the right to verify eligibility and disqualify any entry that does not comply.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>2. Weekly Draw Mechanics</h3>
+          <ul>
+            <li>Draws take place every <strong style="color:#fff;">Monday at 12:00 noon GMT</strong>.</li>
+            <li>Each valid entry received by Sunday 23:59 GMT is included in that week's draw.</li>
+            <li>The prize pot equals the total number of valid entries that week multiplied by £1.</li>
+            <li>There is no rollover — the full pot is awarded every week without exception.</li>
+            <li>If no valid entries are received in a given week, no draw takes place and no prize is awarded.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>3. Random Winner Selection</h3>
+          <ul>
+            <li>The winner is selected using a <strong style="color:#fff;">cryptographically secure random number generator</strong> applied to the pool of all valid entries for that week.</li>
+            <li>The selection process is conducted by an independent automated system and is not subject to human influence.</li>
+            <li>Each valid entry has exactly one chance per week regardless of the method of entry.</li>
+            <li>The draw result is final and binding. No correspondence will be entered into regarding the outcome.</li>
+            <li>The winner will be notified via the email address provided at time of entry within 24 hours of the draw.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>4. Paid Entry</h3>
+          <ul>
+            <li>Paid entry costs <strong style="color:#fff;">£1 per week</strong>, billed monthly at £4.</li>
+            <li>Payment is processed securely. No payment data is stored by QUID.</li>
+            <li>Subscriptions can be cancelled at any time before the next billing cycle via your account settings.</li>
+            <li>Refunds are not available for completed billing periods.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>5. Free Postal Entry Route</h3>
+          <div class="tc-highlight" style="margin-bottom:10px;">
+            <strong>To enter for free by post:</strong> Write your full name, date of birth, email address, and the words <em>"QUID ENTRY"</em> on a plain piece of paper and send it to:<br><br>
+            <strong style="color:#fff;">QUID Free Entry, PO Box 12345, London, EC1A 1BB</strong><br><br>
+            One postal entry per envelope. Entries must be received by Sunday 23:59 GMT to be included in that week's draw.
+          </div>
+          <ul>
+            <li>Free postal entries are entered into the same draw pool as paid entries.</li>
+            <li>Free and paid entries carry <strong style="color:#fff;">identical odds</strong> of winning.</li>
+            <li>No minimum number of postal entries is required for the draw to proceed.</li>
+            <li>Bulk or photocopied entries will be disqualified.</li>
+            <li>QUID accepts no responsibility for entries lost, delayed, or damaged in the post.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>6. Equal Odds Guarantee</h3>
+          <ul>
+            <li>Every valid entry — whether paid or free postal — is assigned a single unique token in the draw pool.</li>
+            <li>The random selection draws from this unified pool with no weighting applied to any entry.</li>
+            <li>Paying more does not increase your odds. One entry = one chance, regardless of method.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>7. Prize Distribution</h3>
+          <ul>
+            <li>The winner receives <strong style="color:#fff;">100% of the weekly pot</strong> — no deductions, no fees.</li>
+            <li>Prize is transferred via bank transfer to the winner's nominated UK bank account within <strong style="color:#fff;">5 working days</strong> of the draw.</li>
+            <li>Winners must provide valid UK bank details to claim their prize within 14 days of notification, or the prize will be forfeited.</li>
+            <li>Prizes cannot be exchanged for any other form of payment or transferred to a third party.</li>
+            <li>QUID reserves the right to publicise the winner's username (not full name) for promotional purposes unless the winner opts out in writing.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>8. Anti-Fraud Rules</h3>
+          <ul>
+            <li>Multiple accounts, automated entries, or any attempt to manipulate the draw will result in immediate disqualification and a permanent ban.</li>
+            <li>QUID reserves the right to withhold prizes pending fraud investigation and to take legal action where appropriate.</li>
+            <li>Any entry submitted using false identity information will be void.</li>
+            <li>QUID may require winners to provide proof of identity before releasing a prize.</li>
+            <li>Suspicious activity will be reported to relevant authorities.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h3>9. Governing Law</h3>
+          <p>These Terms are governed by the laws of England and Wales. Any disputes shall be subject to the exclusive jurisdiction of the English courts. QUID operates as a free prize draw and is not subject to the Gambling Act 2005.</p>
+        </div>
+
+        <div class="tc-section">
+          <h3>10. Contact</h3>
+          <p>For any queries regarding these Terms, contact us at <strong style="color:var(--p4);">hello@quid.co.uk</strong></p>
+        </div>
+
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeTC()" style="flex:1;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY POLICY MODAL -->
+  <div class="modal-overlay" id="privacyModal">
+    <div class="modal modal-wide">
+      <h2><span>Privacy</span> Policy</h2>
+      <p style="font-size:0.7rem;color:rgba(180,160,255,0.35);">Last updated: April 2026 &nbsp;·&nbsp; QUID</p>
+
+      <div class="tc-body">
+        <div class="tc-section">
+          <h3>Data We Collect</h3>
+          <ul>
+            <li>Name, email address, and chosen username at registration.</li>
+            <li>Billing information processed via our payment provider (we do not store card data).</li>
+            <li>IP address and basic usage data for security and fraud prevention.</li>
+          </ul>
+        </div>
+        <div class="tc-section">
+          <h3>How We Use Your Data</h3>
+          <ul>
+            <li>To administer your entry and notify you if you win.</li>
+            <li>To process payments and manage your subscription.</li>
+            <li>To comply with legal obligations and prevent fraud.</li>
+            <li>We will not sell your data to third parties.</li>
+          </ul>
+        </div>
+        <div class="tc-section">
+          <h3>Your Rights (UK GDPR)</h3>
+          <ul>
+            <li>Right to access, correct, or delete your personal data.</li>
+            <li>Right to withdraw consent at any time.</li>
+            <li>Right to lodge a complaint with the ICO at <strong style="color:var(--p4);">ico.org.uk</strong>.</li>
+          </ul>
+        </div>
+        <div class="tc-section">
+          <h3>Data Retention</h3>
+          <p>We retain your data for as long as your account is active, plus 6 years for legal and accounting purposes. You may request deletion at any time.</p>
+        </div>
+        <div class="tc-section">
+          <h3>Contact</h3>
+          <p>Data queries: <strong style="color:var(--p4);">privacy@quid.co.uk</strong></p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closePrivacy()" style="flex:1;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS MODAL -->
+  <div class="modal-overlay" id="learnModal">
+    <div class="modal">
+      <h2>How <span>QUID</span> works</h2>
+      <p style="color:rgba(200,180,255,0.55);font-size:0.85rem;line-height:1.85;">
+        <strong style="color:#fff;">1. Pay £1 a week</strong><br>
+        We bill £4 monthly. That's it — no hidden fees.<br><br>
+        <strong style="color:#fff;">2. Every Monday, one winner</strong><br>
+        One member is picked at random. They receive 100% of that week's pot.<br><br>
+        <strong style="color:#fff;">3. Winner takes all</strong><br>
+        7,000+ members = £7,000+ pot. Bigger pool, bigger prize.<br><br>
+        <strong style="color:#fff;">4. No commitment</strong><br>
+        Cancel any time before the next billing cycle.
+      </p>
+      <button class="btn btn-primary" onclick="closeLearnModal();openModal();">Join now — £1/week</button>
+      <button class="btn btn-ghost"   onclick="closeLearnModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+  // ════════════════════════════════════════════════════════════
+  //  NEON WAVE + MONEY SYMBOLS
+  // ════════════════════════════════════════════════════════════
+  (function () {
+    const canvas = document.getElementById('waveCanvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H, t = 0;
+
+    // ── wave definitions ──
+    // Each wave: { col, glow, amp, freq, speed, yFrac, width, alpha }
+    const WAVE_DEFS = [
+      { col:'#6d28d9', glow:'#6d28d9', amp:0.055, freq:1.8, speed:0.28, yFrac:0.12, lw:1.2, alpha:0.7 },
+      { col:'#7c3aed', glow:'#7c3aed', amp:0.06,  freq:1.6, speed:0.22, yFrac:0.22, lw:1.8, alpha:0.8 },
+      { col:'#9333ea', glow:'#9333ea', amp:0.065, freq:1.4, speed:0.18, yFrac:0.30, lw:1.4, alpha:0.75 },
+      { col:'#a855f7', glow:'#a855f7', amp:0.07,  freq:1.3, speed:0.20, yFrac:0.38, lw:2.2, alpha:0.9 },
+      { col:'#b44eff', glow:'#b44eff', amp:0.075, freq:1.2, speed:0.24, yFrac:0.46, lw:1.6, alpha:0.85 },
+      { col:'#8b5cf6', glow:'#8b5cf6', amp:0.065, freq:1.5, speed:0.19, yFrac:0.54, lw:1.2, alpha:0.7 },
+      { col:'#6366f1', glow:'#6366f1', amp:0.06,  freq:1.7, speed:0.23, yFrac:0.62, lw:1.8, alpha:0.8 },
+      { col:'#4f8bff', glow:'#4f8bff', amp:0.07,  freq:1.4, speed:0.26, yFrac:0.70, lw:2.0, alpha:0.9 },
+      { col:'#3b82f6', glow:'#3b82f6', amp:0.065, freq:1.6, speed:0.21, yFrac:0.78, lw:1.4, alpha:0.75 },
+      { col:'#60a5fa', glow:'#60a5fa', amp:0.055, freq:1.9, speed:0.25, yFrac:0.86, lw:1.2, alpha:0.7 },
+      { col:'#818cf8', glow:'#818cf8', amp:0.05,  freq:2.0, speed:0.30, yFrac:0.92, lw:1.0, alpha:0.6 },
+    ];
+
+    // wave y value at given x and time
+    function waveY(def, x, time) {
+      return def.yFrac * H
+        + def.amp * H * Math.sin(def.freq * (x / W) * Math.PI * 2 - time * def.speed * Math.PI * 2);
+    }
+
+    // ── money symbols riding waves ──
+    const SYMBOLS = ['£','$','€','¥','₿','₹','₩','₦','₽','฿','$','€','£'];
+
+    let symbols = [];
+
+    function spawnSymbol(waveIdx) {
+      const def = WAVE_DEFS[waveIdx];
+      return {
+        waveIdx,
+        xFrac:  Math.random(),          // 0..1 across width
+        speed:  0.0004 + Math.random() * 0.0005, // xFrac units per frame
+        size:   13 + Math.random() * 18,
+        alpha:  0.35 + Math.random() * 0.45,
+        sym:    SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+        col:    def.col,
+      };
+    }
+
+    function initSymbols() {
+      symbols = [];
+      // 2-3 symbols per wave
+      WAVE_DEFS.forEach((_, i) => {
+        const n = 2 + Math.floor(Math.random() * 2);
+        for (let j = 0; j < n; j++) {
+          const s = spawnSymbol(i);
+          s.xFrac = Math.random(); // scatter initially
+          symbols.push(s);
+        }
+      });
+    }
+
+    function drawWaves() {
+      WAVE_DEFS.forEach(def => {
+        // glow pass (wider, semi-transparent)
+        ctx.save();
+        ctx.shadowColor = def.glow;
+        ctx.shadowBlur  = 18;
+        ctx.strokeStyle = def.col;
+        ctx.globalAlpha = def.alpha * 0.5;
+        ctx.lineWidth   = def.lw * 2.8;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 3) {
+          const y = waveY(def, x, t);
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // sharp core line
+        ctx.save();
+        ctx.shadowColor = def.glow;
+        ctx.shadowBlur  = 8;
+        ctx.strokeStyle = def.col;
+        ctx.globalAlpha = def.alpha;
+        ctx.lineWidth   = def.lw;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 3) {
+          const y = waveY(def, x, t);
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    function drawSymbols() {
+      for (const s of symbols) {
+        const def = WAVE_DEFS[s.waveIdx];
+        const x   = s.xFrac * W;
+        const y   = waveY(def, x, t);
+
+        // tilt symbol to follow wave slope
+        const dx  = 6;
+        const y2  = waveY(def, x + dx, t);
+        const angle = Math.atan2(y2 - y, dx);
+
+        ctx.save();
+        ctx.translate(x, y - s.size * 0.55); // sit just above the wave
+        ctx.rotate(angle);
+        ctx.globalAlpha = s.alpha;
+        ctx.fillStyle   = s.col;
+        ctx.shadowColor = s.col;
+        ctx.shadowBlur  = 10;
+        ctx.font        = `600 ${s.size}px Inter,sans-serif`;
+        ctx.textAlign   = 'center';
+        ctx.textBaseline= 'middle';
+        ctx.fillText(s.sym, 0, 0);
+        ctx.restore();
+
+        // advance along wave (left to right, wraps)
+        s.xFrac += s.speed;
+        if (s.xFrac > 1.05) s.xFrac = -0.05;
+      }
+    }
+
+    function frame() {
+      ctx.clearRect(0, 0, W, H);
+      drawWaves();
+      drawSymbols();
+      t += 0.008;
+      requestAnimationFrame(frame);
+    }
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', () => { resize(); initSymbols(); });
+    resize();
+    initSymbols();
+    frame();
+  })();
+
+
+  // ── COUNTDOWN ──
+  function getNextMonday() {
+    const now = new Date(), day = now.getDay();
+    const d = day === 1 ? 7 : (8 - day) % 7 || 7;
+    const next = new Date(now);
+    next.setDate(now.getDate() + d);
+    next.setHours(0,0,0,0);
+    return next;
+  }
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function tick() {
+    let diff = Math.max(0, getNextMonday() - new Date());
+    const days = Math.floor(diff/86400000); diff -= days*86400000;
+    const hrs  = Math.floor(diff/3600000);  diff -= hrs*3600000;
+    const mins = Math.floor(diff/60000);    diff -= mins*60000;
+    const secs = Math.floor(diff/1000);
+    document.getElementById('countdown').textContent =
+      days > 0 ? `${days}d ${pad(hrs)}:${pad(mins)}:${pad(secs)}` : `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+  }
+  setInterval(tick,1000); tick();
+
+  // ── WEEK NUMBER ──
+  (function(){
+    const d = new Date(); d.setHours(0,0,0,0);
+    d.setDate(d.getDate()+3-(d.getDay()+6)%7);
+    const w = new Date(d.getFullYear(),0,4);
+    document.getElementById('weekNum').textContent =
+      1+Math.round(((d-w)/86400000-3+(w.getDay()+6)%7)/7);
+  })();
+
+  // ── MODALS ──
+  function openModal()       { document.getElementById('joinModal').classList.add('open'); }
+  function closeModal()      { document.getElementById('joinModal').classList.remove('open'); }
+  function openLearnModal()  { document.getElementById('learnModal').classList.add('open'); }
+  function closeLearnModal() { document.getElementById('learnModal').classList.remove('open'); }
+  function openTC()          { document.getElementById('tcModal').classList.add('open'); }
+  function closeTC()         { document.getElementById('tcModal').classList.remove('open'); }
+  function openPrivacy()     { document.getElementById('privacyModal').classList.add('open'); }
+  function closePrivacy()    { document.getElementById('privacyModal').classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(el =>
+    el.addEventListener('click', e => { if(e.target===el) el.classList.remove('open'); })
+  );
+  // ── COLOUR WAVE SWEEP — title & pot, synced to wave speed ──
+  (function () {
+    const titleEl = document.querySelector('.wordmark h1');
+    const potEl   = document.querySelector('.pot-amount');
+
+    // Same speed increment as the wave canvas (speed 0.22)
+    const SPEED = 0.22 * 0.008 * Math.PI * 2;
+
+    let phaseTitle = 0;
+    let phasePot   = Math.PI * 0.7; // offset so they're out of sync with each other
+
+    function grad(phase) {
+      // pos sweeps 10% → 90% across the text using sin
+      const pos = 50 + 40 * Math.sin(phase); // centre of the transition, 10%–90%
+      const fade = 22; // width of the soft blend zone
+      const a = Math.max(0,  pos - fade);
+      const b = Math.min(100, pos + fade);
+      return `linear-gradient(90deg, #b44eff 0%, #b44eff ${a}%, #ddd0ff ${b}%, #ddd0ff 100%)`;
+    }
+
+    function applyGrad(el, phase) {
+      el.style.background             = grad(phase);
+      el.style.webkitBackgroundClip   = 'text';
+      el.style.backgroundClip         = 'text';
+      el.style.webkitTextFillColor    = 'transparent';
+      el.style.color                  = 'transparent';
+    }
+
+    function tick() {
+      if (titleEl) applyGrad(titleEl, phaseTitle);
+      if (potEl)   applyGrad(potEl,   phasePot);
+      phaseTitle += SPEED;
+      phasePot   += SPEED;
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
+
+  // ── WINNER DROPDOWN ──
+  function toggleWinners() {
+    document.getElementById('winnerStrip').classList.toggle('open');
+  }
+
+  // ── ENTRY COUNT ──
+  let userEntries = 0;
+  function setEntries(n) {
+    userEntries = n;
+    document.getElementById('entryCount').textContent = n;
+  }
+
+  // ── URGENCY COUNTER — drifts slowly to feel live ──
+  (function() {
+    let base = 183;
+    function nudge() {
+      base += Math.floor(Math.random() * 3); // occasionally tick up
+      document.getElementById('urgencyCount').textContent = base;
+      setTimeout(nudge, 18000 + Math.random() * 24000); // every ~18-42s
+    }
+    setTimeout(nudge, 20000);
+  })();
+
+  // ── LIVE STATS from backend ──
+  async function loadStats() {
+    try {
+      const res  = await fetch('/api/stats');
+      const data = await res.json();
+
+      // Update pot
+      const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+      document.querySelector('.pot-amount').textContent = fmt.format(data.potAmount || 7058);
+      document.querySelector('.pot-sub').textContent =
+        `${(data.memberCount || 7058).toLocaleString('en-GB')} members · £1 each this week`;
+      document.querySelector('.stat-value').textContent = (data.memberCount || 7058).toLocaleString('en-GB');
+
+      // Update recent winners
+      if (data.recentWinners && data.recentWinners.length > 0) {
+        const latest = data.recentWinners[0];
+        document.querySelector('.winner-text').innerHTML =
+          `Last winner — <strong>@${latest.winner_handle}</strong> took home <strong>£${latest.pot_amount.toLocaleString()}</strong> on ${latest.week_start}`;
+
+        const hist = document.getElementById('winnerHistory');
+        hist.innerHTML = data.recentWinners.map(d =>
+          `<div class="winner-row">
+            <span class="winner-row-name">@${d.winner_handle}</span>
+            <span class="winner-row-amt">£${Number(d.pot_amount).toLocaleString()}</span>
+            <span class="winner-row-date">${d.week_start}</span>
+          </div>`
+        ).join('');
+      }
+    } catch (e) {
+      // Server not running — silently keep static fallback values
+    }
+  }
+
+  // Check user's entry count if email stored in sessionStorage
+  async function checkUserEntries() {
+    const storedEmail = sessionStorage.getItem('quid_email');
+    if (!storedEmail) return;
+    try {
+      const res  = await fetch(`/api/entries?email=${encodeURIComponent(storedEmail)}`);
+      const data = await res.json();
+      if (data.active) setEntries(data.entries);
+    } catch (e) {}
+  }
+
+  loadStats();
+  checkUserEntries();
+  setInterval(loadStats, 30000); // refresh every 30s
+
+  async function submitJoin() {
+    const name  = document.getElementById('joinName').value.trim();
+    const email = document.getElementById('joinEmail').value.trim();
+    const hand  = document.getElementById('joinHandle').value.trim();
+    if (!name || !email || !hand) { alert('Please fill in all fields.'); return; }
+
+    const btn = document.querySelector('#joinModal .btn-primary');
+    btn.textContent = 'Redirecting to payment…';
+    btn.disabled    = true;
+
+    try {
+      const res  = await fetch('/api/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ name, email, handle: hand }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+      // Store email so we can check entries after redirect
+      sessionStorage.setItem('quid_email', email);
+
+      // Redirect to Stripe checkout
+      window.location.href = data.url;
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+      btn.textContent = 'Start subscription — £4/mo';
+      btn.disabled    = false;
+    }
+  }
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm audit:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"require\\('./db.js'\\); console.log\\('DB OK'\\)\")",
+      "Bash(node -e \"const {Database} = require\\('node-sqlite3-wasm'\\); console.log\\(typeof Database\\)\")",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const Database = require\\('better-sqlite3'\\); const db = new Database\\(':memory:'\\); console.log\\('better-sqlite3 OK'\\)\")",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:3000/api/stats)",
+      "Bash(npx kill-port:*)"
+    ]
+  }
+}
