@@ -548,7 +548,7 @@
           <div class="pot-label">This week's pot</div>
           <div class="pot-amount">£7,058</div>
           <div class="pot-sub">7,058 members &nbsp;·&nbsp; £1 each this week</div>
-          <div style="font-size:0.6rem;color:rgba(180,160,255,0.3);margin-top:6px;letter-spacing:0.05em;">Projected pot · updates live as members join</div>
+          <div style="font-size:0.6rem;color:rgba(180,160,255,0.3);margin-top:6px;letter-spacing:0.05em;">Projected pot</div>
         </div>
         <div class="winner-strip" id="winnerStrip" onclick="toggleWinners()">
           <div class="winner-strip-header">
@@ -702,7 +702,7 @@
         <div class="tc-section">
           <h3>2. Weekly Draw Mechanics</h3>
           <ul>
-            <li>Draws take place every <strong style="color:#fff;">Monday at 12:00 noon GMT</strong>.</li>
+            <li>Draws take place every <strong style="color:#fff;">Monday at 8:00pm GMT</strong>.</li>
             <li>Each valid entry received by Sunday 23:59 GMT is included in that week's draw.</li>
             <li>The prize pot equals the total number of valid entries that week multiplied by £1.</li>
             <li>There is no rollover — the full pot is awarded every week without exception.</li>
@@ -1015,7 +1015,7 @@
     const d = day === 1 ? 7 : (8 - day) % 7 || 7;
     const next = new Date(now);
     next.setDate(now.getDate() + d);
-    next.setHours(0,0,0,0);
+    next.setHours(20,0,0,0); // 8pm UK time
     return next;
   }
   function pad(n) { return String(n).padStart(2,'0'); }

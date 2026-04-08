@@ -91,21 +91,21 @@ function addWeeklyEntriesForAllActive(weekStart) {
  * Cron syntax: minute hour day month weekday
  */
 function startScheduler() {
-  // 11:00 every Monday — add entries for all active subscribers
-  cron.schedule('0 11 * * 1', () => {
+  // 19:55 every Monday — add entries for all active subscribers
+  cron.schedule('55 19 * * 1', () => {
     const week = currentWeekStart();
     console.log(`[cron] Seeding entries for week ${week}`);
     addWeeklyEntriesForAllActive(week);
   }, { timezone: 'Europe/London' });
 
-  // 12:00 every Monday — run the draw
-  cron.schedule('0 12 * * 1', async () => {
+  // 20:00 every Monday — run the draw
+  cron.schedule('0 20 * * 1', async () => {
     const week = currentWeekStart();
     console.log(`[cron] Running draw for week ${week}`);
     await runDraw(week);
   }, { timezone: 'Europe/London' });
 
-  console.log('[draw] Scheduler started — draws run every Monday at 12:00 London time');
+  console.log('[draw] Scheduler started — draws run every Monday at 20:00 London time');
 }
 
 module.exports = { runDraw, addWeeklyEntriesForAllActive, startScheduler };

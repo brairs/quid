@@ -82,7 +82,7 @@ async function sendWelcome(user, entriesThisWeek) {
           (4 monthly + 5 signup bonus — equal odds to every other entry).
         </p>
         <p class="body-text">
-          The draw happens every <span class="highlight">Monday at 12:00 noon</span>.
+          The draw happens every <span class="highlight">Monday at 8:00pm UK time</span>.
           One random entry wins the entire pot. This week's pot:
           <span class="highlight">check the site for the live total</span>.
         </p>
