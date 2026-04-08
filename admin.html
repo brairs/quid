@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QUID Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #07060f; color: #fff; font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px 20px; }
+    h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.04em;
+         background: linear-gradient(135deg,#fff 20%,#b44eff 60%,#4f8bff 100%);
+         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+         background-clip: text; margin-bottom: 4px; }
+    .sub { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+           color: rgba(180,160,255,0.4); margin-bottom: 32px; }
+    .login { max-width: 360px; }
+    input { width: 100%; padding: 12px 16px; background: rgba(14,8,32,0.8);
+            border: 1px solid rgba(150,100,255,0.3); border-radius: 10px;
+            color: #fff; font-size: 0.9rem; margin-bottom: 12px; outline: none; }
+    button { padding: 12px 24px; background: linear-gradient(135deg,#7c3aed,#b44eff);
+             border: none; border-radius: 10px; color: #fff; font-size: 0.85rem;
+             font-weight: 600; cursor: pointer; letter-spacing: 0.06em; }
+    .card { background: rgba(14,8,32,0.8); border: 1px solid rgba(150,100,255,0.2);
+            border-radius: 16px; padding: 24px; margin-bottom: 20px; max-width: 900px; }
+    .card h2 { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+               color: rgba(180,160,255,0.4); margin-bottom: 16px; }
+    .stat-row { display: flex; gap: 32px; margin-bottom: 8px; }
+    .stat { text-align: center; }
+    .stat-n { font-size: 2.4rem; font-weight: 700; color: #b44eff; }
+    .stat-l { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+              color: rgba(180,160,255,0.4); margin-top: 2px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th { text-align: left; color: rgba(180,160,255,0.4); font-size: 0.65rem;
+         letter-spacing: 0.12em; text-transform: uppercase; padding: 6px 10px;
+         border-bottom: 1px solid rgba(130,80,255,0.15); }
+    td { padding: 10px; border-bottom: 1px solid rgba(130,80,255,0.08); color: rgba(200,180,255,0.8); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 0.65rem;
+             font-weight: 600; letter-spacing: 0.08em; }
+    .active { background: rgba(0,200,100,0.15); color: #00c864; border: 1px solid rgba(0,200,100,0.3); }
+    .inactive { background: rgba(255,60,60,0.1); color: #ff6060; border: 1px solid rgba(255,60,60,0.2); }
+    #error { color: #ff6060; font-size: 0.8rem; margin-top: 8px; }
+    #adminPanel { display: none; }
+  </style>
+</head>
+<body>
+  <h1>QUID</h1>
+  <div class="sub">Admin Dashboard</div>
+
+  <div class="login" id="loginPanel">
+    <input type="password" id="keyInput" placeholder="Enter admin key..." />
+    <button onclick="login()">Access Dashboard</button>
+    <div id="error"></div>
+  </div>
+
+  <div id="adminPanel">
+    <div class="card">
+      <h2>Overview</h2>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-n" id="totalMembers">—</div>
+          <div class="stat-l">Active Members</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" id="totalPot">—</div>
+          <div class="stat-l">This Week's Pot</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" id="yourCut">—</div>
+          <div class="stat-l">Your 10% Cut</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Members</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Handle</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Bonus Left</th>
+          </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let adminKey = '';
+
+    function login() {
+      adminKey = document.getElementById('keyInput').value.trim();
+      loadDashboard();
+    }
+
+    document.getElementById('keyInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    async function loadDashboard() {
+      const res = await fetch('/admin/users', {
+        headers: { 'x-admin-key': adminKey }
+      });
+      if (res.status === 403) {
+        document.getElementById('error').textContent = 'Wrong admin key.';
+        return;
+      }
+      const users = await res.json();
+      const statsRes = await fetch('/api/stats');
+      const stats = await statsRes.json();
+
+      document.getElementById('loginPanel').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+
+      const active = users.filter(u => u.is_active).length;
+      const pot = stats.potAmount || active;
+      const cut = Math.floor(pot * 0.1 * 100) / 100;
+
+      document.getElementById('totalMembers').textContent = active;
+      document.getElementById('totalPot').textContent = '£' + pot.toLocaleString('en-GB');
+      document.getElementById('yourCut').textContent = '£' + cut.toFixed(2);
+
+      const tbody = document.getElementById('userTable');
+      tbody.innerHTML = '';
+      users.forEach(u => {
+        tbody.innerHTML += `<tr>
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td>@${u.handle}</td>
+          <td><span class="badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+          <td>${u.joined_at ? u.joined_at.slice(0,10) : '—'}</td>
+          <td>${u.bonus_remaining}</td>
+        </tr>`;
+      });
+    }
+  </script>
+</body>
+</html>

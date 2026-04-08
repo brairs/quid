@@ -1113,30 +1113,32 @@
   })();
 
   // ── LIVE STATS from backend ──
-  let displayedPot = 7058;
-  function animatePot(target) {
-    const step = () => {
-      if (displayedPot < target) {
-        displayedPot = Math.min(displayedPot + 4, target);
-        const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
-        document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
-      }
-    };
-    // tick up £4 every 8 seconds (one new member joining)
-    setInterval(step, 8000);
-  }
+  const POT_KEY = 'quid_pot_v1';
+  const POT_MIN = 5000;
+  const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+
+  // Load persisted pot or start at 5000
+  let displayedPot = Math.max(POT_MIN, parseFloat(localStorage.getItem(POT_KEY) || POT_MIN));
+  document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
+
+  // Tick up £4 every 5 minutes, persist across reloads
+  setInterval(() => {
+    displayedPot += 4;
+    localStorage.setItem(POT_KEY, displayedPot);
+    document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
+  }, 5 * 60 * 1000);
 
   async function loadStats() {
     try {
       const res  = await fetch('/api/stats');
       const data = await res.json();
 
-      // Update pot
-      const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
-      const realPot = data.potAmount || 7058;
-      document.querySelector('.pot-amount').textContent = fmt.format(realPot);
-      displayedPot = realPot;
-      animatePot(realPot + 500); // animate up toward a higher target for effect
+      // Only override displayed pot if real members have joined (real pot > 0)
+      if (data.potAmount && data.potAmount > 0) {
+        displayedPot = Math.max(displayedPot, data.potAmount);
+        localStorage.setItem(POT_KEY, displayedPot);
+        document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
+      }
       document.querySelector('.pot-sub').textContent =
         `${(data.memberCount || 7058).toLocaleString('en-GB')} members · £1 each this week`;
       document.querySelector('.stat-value').textContent = (data.memberCount || 7058).toLocaleString('en-GB');
