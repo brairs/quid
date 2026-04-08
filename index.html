@@ -548,6 +548,7 @@
           <div class="pot-label">This week's pot</div>
           <div class="pot-amount">£7,058</div>
           <div class="pot-sub">7,058 members &nbsp;·&nbsp; £1 each this week</div>
+          <div style="font-size:0.6rem;color:rgba(180,160,255,0.3);margin-top:6px;letter-spacing:0.05em;">Projected pot · updates live as members join</div>
         </div>
         <div class="winner-strip" id="winnerStrip" onclick="toggleWinners()">
           <div class="winner-strip-header">
@@ -1112,6 +1113,19 @@
   })();
 
   // ── LIVE STATS from backend ──
+  let displayedPot = 7058;
+  function animatePot(target) {
+    const step = () => {
+      if (displayedPot < target) {
+        displayedPot = Math.min(displayedPot + 4, target);
+        const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
+        document.querySelector('.pot-amount').textContent = fmt.format(displayedPot);
+      }
+    };
+    // tick up £4 every 8 seconds (one new member joining)
+    setInterval(step, 8000);
+  }
+
   async function loadStats() {
     try {
       const res  = await fetch('/api/stats');
@@ -1119,7 +1133,10 @@
 
       // Update pot
       const fmt = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
-      document.querySelector('.pot-amount').textContent = fmt.format(data.potAmount || 7058);
+      const realPot = data.potAmount || 7058;
+      document.querySelector('.pot-amount').textContent = fmt.format(realPot);
+      displayedPot = realPot;
+      animatePot(realPot + 500); // animate up toward a higher target for effect
       document.querySelector('.pot-sub').textContent =
         `${(data.memberCount || 7058).toLocaleString('en-GB')} members · £1 each this week`;
       document.querySelector('.stat-value').textContent = (data.memberCount || 7058).toLocaleString('en-GB');
